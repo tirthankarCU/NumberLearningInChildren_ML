@@ -29,13 +29,14 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 
 RUN python3 get-pip.py 
 
-WORKDIR /NLP_RL_Docker_Version
-
-RUN pip install -r metadata/requirements.txt
-
 # Install Git
 RUN apt-get update && apt-get install -y git
 
 RUN rm -rf ~/NLP_RL_Docker_Version
 
 RUN git clone https://github.com/tirthankarCU/NLP_RL_Docker_Version.git
+
+# Install python packages. 
+WORKDIR /NLP_RL_Docker_Version
+
+RUN pip install -r metadata/requirements.txt
