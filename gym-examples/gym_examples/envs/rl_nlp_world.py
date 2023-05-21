@@ -51,9 +51,12 @@ class RlNlpWorld(gym.Env):
             "progress": "currently feature not required."
         }
 ############################################
-    def reset(self, seed=None, options=None):
+    def reset(self, set_no=-1, seed=None, options=None):
         super().reset(seed=seed)
-        self.no=np.random.randint(1,1000)
+        if set_no==-1:
+            self.no=np.random.randint(1,1000)
+        else:
+            self.no=set_no
         ## Gen initial info ##
         self.carry=False
         self.blocksLeft=[ (self.no//10**i)%10 for i in range(3) ]

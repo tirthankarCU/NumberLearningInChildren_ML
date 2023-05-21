@@ -44,3 +44,6 @@ RUN pip install -r metadata/requirements.txt
 
 # installing additional python packages.
 RUN pip install -r metadata/requirements1.txt
+
+# for open cv2
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
