@@ -100,14 +100,14 @@ class RlNlpWorld(gym.Env):
         word_name,hun,ten,uni = get_word_name(no)
         if hun:
             exp_actions = exp_actions + [0,3]*hun
-            instructions = instructions  + [f'Next , pick up the {spell[_+1]} hundredth block , and put it in the hundredth\'s palce .' for _ in range(hun)]
+            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} hundredth block .' if _%2 ==0  else 'Put the hundredth block in the hundredth\'s palce .' for _ in range(2*hun)]
         if ten:
             exp_actions = exp_actions + [1,4]*ten
-            instructions = instructions  + [f'Next , pick up the {spell[_+1]} tenth block , and put it in the tenth\'s palce .' for _ in range(ten)]
-        if uni:
+            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} tenth block .' if _%2 ==0  else 'Put the tenth block in the tenth\'s palce .' for _ in range(2*ten)]
+        if ten:
             exp_actions = exp_actions + [2,5]*uni    
-            instructions = instructions  + [f'Next , pick up the {spell[_+1]} unit block , and put it in the unit\'s palce .' for _ in range(uni)]        
-        instructions[0] = f"This is {word_name}. Let's use our blocks to build the number. To build {word_name}"+instructions[0][len("Next")-1:]
+            instructions = instructions  +  [f'Next , pick up the {spell[_//2+1]} unit block .' if _%2 ==0  else 'Put the unit block in the unit\'s palce .' for _ in range(2*uni)]       
+        instructions[0] = f"This is {word_name}. Let's use our blocks to build the number. To build {word_name}"+instructions[0][len("Next"):]
         return instructions, exp_actions
 ############################################
     def step(self, action):
@@ -165,7 +165,8 @@ class RlNlpWorld(gym.Env):
         self._visual=vga.drawAgain()
         if action == self.exp_actions[self.nlp_index]:
             self.nlp_index += 1
-        self._text = self.instructions[self.nlp_index]
+        if self.nlp_index<len(self.instructions):
+            self._text = self.instructions[self.nlp_index]
         self.curr_time += 1
         solution=checkSolution() # return True is solution is correct
         terminated=False 
@@ -188,3 +189,4 @@ class RlNlpWorld(gym.Env):
     def close(self):
         vga.close_pyame()
 ############################################
+
