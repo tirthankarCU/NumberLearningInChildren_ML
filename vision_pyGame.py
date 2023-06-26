@@ -1,14 +1,15 @@
 import numpy as np
+import matplotlib.pyplot as plt 
 import pygame 
 
 '''
 Global Variables.
 '''
 MX_NO_OF_DIGITS=3
-FPS=30
+FPS=1000000
 rm=0
-frac=1
-WIDTH, HEIGHT = 900*frac, 600*frac
+frac=0.25
+WIDTH, HEIGHT = int(900*frac), int(600*frac)
 WIN = None
 constructArrElement=[[] for _ in range(MX_NO_OF_DIGITS)]
 '''
@@ -26,31 +27,34 @@ NEUTRAL = (128,128,128)
 '''
 BORDERS
 '''
-width_do,height_do=450*frac,150*frac
+width_do,height_do=int(450*frac),int(150*frac)
 DIGIT_OUTER=None
-width_di,height_di=100*frac,100*frac
+width_di,height_di=int(100*frac),int(100*frac)
 '''
 FONT
 '''
-FONT_SIZE=50*frac
+FONT_SIZE=int(50*frac)
 FONT = None
 '''
 CONSTRUCTION_BOX
 '''
-w_b,h_b=32*frac,32*frac
-w_m,h_m=16*frac,16*frac
-w_s,h_s=8*frac,8*frac
+w_b,h_b=int(32*frac),int(32*frac)
+w_m,h_m=int(32*frac),int(32*frac)
+w_s,h_s=int(32*frac),int(32*frac)
 '''
 CONSTRUCT BOX
 '''
-w_cb,h_cb=100*frac,200*frac
+w_cb,h_cb=int(100*frac),int(200*frac)
 big_block=[];medium_block=[];small_block=[]
 
 class RectNode:
     def __init__(self,x,y,width,height,isEmpty) -> None:
         self.rect=pygame.Rect(x,y,width,height)
         self.isEmpty=isEmpty
-    
+        
+offset=int(10*frac)
+w_carry,h_carry=int(128*frac),int(128*frac)
+carry_indicator, carry_rect=False, pygame.Rect(90*offset,45*offset,w_carry,h_carry)    
 def drawRectangleBorder(rect_,color,width):
     a=(rect_.left,rect_.top)
     b=(rect_.left+rect_.width-width,rect_.top)
@@ -81,7 +85,6 @@ def drawWindowOneTime(no_list):
         f_indx+=1
         if f_indx>=len(no_list):
             break
-    offset=10*frac
 # BIG BOX
     init_x=offset
     y_co=offset
@@ -113,7 +116,7 @@ def drawWindowOneTime(no_list):
     gap_x=(width_do/3-w_cb)/2
     gap_y=(height_do-h_cb)/2
     rx,ry=WIDTH/2-width_do/2,HEIGHT/1.15-h_cb/2
-    c_gap=4
+    c_gap=2
     for _ in range(MX_NO_OF_DIGITS):
         digit_inner=pygame.Rect(rx+gap_x,ry+gap_y,w_cb,h_cb)
         drawRectangleBorder(digit_inner,BLUE,2)
@@ -162,6 +165,10 @@ def drawAgain():
         for __ in c:
             if __.isEmpty==False:
                 pygame.draw.rect(WIN,color[id],__.rect)
+    if carry_indicator:
+        pygame.draw.rect(WIN,BLACK,carry_rect)
+    else:
+        pygame.draw.rect(WIN,WHITE,carry_rect)
     rgb_array = pygame.surfarray.array3d(WIN)
     if rm=='human':
         pygame.display.update()
@@ -196,3 +203,8 @@ def draw_main(render_mode,fps,no):
 
 def close_pyame():
     pygame.quit()
+
+if __name__=='__main__':
+    carry_indicator=True
+    plt.imsave('how_image_looks.png',draw_main("rgb_array",1000000,969))
+    

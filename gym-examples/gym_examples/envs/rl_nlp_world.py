@@ -26,16 +26,15 @@ class BOXTYPE(Enum):
 
 spell={1:'first',2:'second',3:'third',4:'fourth',5:'fifth',6:'sixth',7:'seventh',8:'eighth',9:'ninth'}
 class RlNlpWorld(gym.Env):
-    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 1000000}
 ############################################
-    def __init__(self,mx_timeSteps=50,render_mode=None):
+    def __init__(self,render_mode=None):
         self.mode=0
         if render_mode=='rgb_array':
             self.mode=1
         self._visual=None
         self._text='#'
         self._question='?'
-        self.mx_timeSteps,self.curr_time=mx_timeSteps,0
         # Just to remove assertion error. #
         self.action_space = spaces.Discrete(6) 
         self.observation_space=spaces.Dict({
@@ -51,8 +50,9 @@ class RlNlpWorld(gym.Env):
             "progress": "currently feature not required."
         }
 ############################################
-    def reset(self, set_no=-1, seed=None, options=None):
+    def reset(self, set_no=-1, mx_timeSteps=50,seed=None, options=None):
         super().reset(seed=seed)
+        self.mx_timeSteps,self.curr_time=mx_timeSteps,0
         if set_no==-1:
             self.no=np.random.randint(1,1000)
         else:
@@ -62,7 +62,6 @@ class RlNlpWorld(gym.Env):
         self.blocksLeft=[ (self.no//10**i)%10 for i in range(3) ]
         self.blocksLeft.reverse()
         self.boxType=BOXTYPE.NONE
-        self.curr_time=0
         self._visual=vga.draw_main(self.metadata['render_modes'][self.mode],self.metadata['render_fps'],self.no)
         self.instructions,self.exp_actions = RlNlpWorld.getNLP(self.no)
         self.nlp_index = 0
@@ -162,6 +161,7 @@ class RlNlpWorld(gym.Env):
 
         '''Extra reward for following instructions'''
         # reward= 1 if action in self.exp_actions else reward
+        vga.carry_indicator=self.carry
         self._visual=vga.drawAgain()
         if action == self.exp_actions[self.nlp_index]:
             self.nlp_index += 1
