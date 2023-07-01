@@ -29,14 +29,22 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 
 RUN python3 get-pip.py 
 
-# Install Git
+# install Git
 RUN apt-get update && apt-get install -y git
 
 RUN rm -rf ~/NLP_RL_Docker_Version
 
-RUN git clone https://github.com/tirthankarCU/NLP_RL_Docker_Version.git
+RUN git clone -b docker-branch https://github.com/tirthankarCU/NLP_RL_Docker_Version.git
 
-# Install python packages. 
+# changing mount point
 WORKDIR /NLP_RL_Docker_Version
 
+# installing python packages.
 RUN pip install -r metadata/requirements.txt
+
+# installing additional python packages.
+RUN pip install -r metadata/requirements1.txt
+
+# for open cv2
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+

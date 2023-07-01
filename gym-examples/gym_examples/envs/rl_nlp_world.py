@@ -24,24 +24,23 @@ class BOXTYPE(Enum):
     MEDIUM=2
     SMALL=3
 
+spell={1:'first',2:'second',3:'third',4:'fourth',5:'fifth',6:'sixth',7:'seventh',8:'eighth',9:'ninth'}
 class RlNlpWorld(gym.Env):
-    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 4}
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 1000000}
 ############################################
-    def __init__(self,mx_timeSteps=50,render_mode=None):
+    def __init__(self,render_mode=None):
         self.mode=0
         if render_mode=='rgb_array':
             self.mode=1
         self._visual=None
         self._text='#'
         self._question='?'
-        self.mx_timeSteps,self.curr_time=mx_timeSteps,0
         # Just to remove assertion error. #
         self.action_space = spaces.Discrete(6) 
         self.observation_space=spaces.Dict({
             "text": spaces.Text(min_length=1,max_length=100),"question":spaces.Text(min_length=1,max_length=100),
             "visual": spaces.Box(low=0, high=255, shape=(vga.WIDTH,vga.HEIGHT,3), dtype=np.uint8)
         })
-        self.spell={1:'one',2:'two',3:'three',4:'four',5:'five',6:'six',7:'seven',8:'eight',9:'nine',0:'zero'}
 ############################################
     def _get_obs(self):
         return {"text": self._text,"question":self._question,"visual": self._visual}
@@ -51,54 +50,64 @@ class RlNlpWorld(gym.Env):
             "progress": "currently feature not required."
         }
 ############################################
-    def reset(self, seed=None, options=None):
+    def reset(self, set_no=-1, mx_timeSteps=50,seed=None, options=None):
         super().reset(seed=seed)
-        self.no=np.random.randint(1,1000)
+        self.mx_timeSteps,self.curr_time=mx_timeSteps,0
+        if set_no==-1:
+            self.no=np.random.randint(1,1000)
+        else:
+            self.no=set_no
         ## Gen initial info ##
         self.carry=False
         self.blocksLeft=[ (self.no//10**i)%10 for i in range(3) ]
         self.blocksLeft.reverse()
         self.boxType=BOXTYPE.NONE
-        self.curr_time=0
         self._visual=vga.draw_main(self.metadata['render_modes'][self.mode],self.metadata['render_fps'],self.no)
-        self._text=f'Start the experiment. {self.getNLP()}'
+        self.instructions,self.exp_actions = RlNlpWorld.getNLP(self.no)
+        self.nlp_index = 0
+        self._text = self.instructions[self.nlp_index]
+        self.nlp_index = self.nlp_index+1
         return self._get_obs()
 ############################################
-    def getNLP(self):
-        def nlp_util():
-            str='There are '
-            if self.blocksLeft[0]>0:
-                str=str+f'{self.spell[self.blocksLeft[0]]} big blocks left '
-            if self.blocksLeft[1]>0:
-                str=str+f'{self.spell[self.blocksLeft[1]]} medium blocks left '
-            if self.blocksLeft[2]>0:
-                str=str+f'{self.spell[self.blocksLeft[2]]} small blocks left '
-            return str
-        if self.carry==True:
-            if self.boxType==BOXTYPE.BIG:
-                putBox="big"
-                self.exp_action=[3]
-            elif self.boxType==BOXTYPE.MEDIUM:
-                putBox="medium"
-                self.exp_action=[4]
+    @staticmethod
+    def getNLP(no):
+        global spell
+        instructions = []
+        exp_actions = []
+        def get_word_name(no):
+            digit10 = ["", "Twenty",  "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety" ]
+            n20 = [  "",       "One",       "Two",      "Three",
+                    "Four",    "Five",      "Six",      "Seven",
+                    "Eight",   "Nine",      "Ten",      "Eleven",
+                    "Twelve",  "Thirteen",  "Fourteen", "Fifteen",
+                    "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
+            def split_no(no):
+                hun,ten,uni = no//100, (no - (no//100)*100)//10, no%10
+                return hun,ten,uni
+            hun, ten, uni = split_no(no)
+            _name = ''
+            if hun: 
+                _name += n20[hun] + " hundred " 
+            if ten:
+                if ten*10<20:
+                    _name += n20[ten*10+uni]
+                else:
+                    _name += digit10[ten-1] + " " + n20[uni]
             else:
-                putBox="small"
-                self.exp_action=[5]
-            self._text=f'Put the {putBox} box in the {putBox} digit area.'
-        else:
-            self._text=f'{nlp_util()}, so you can either pick '
-            self.exp_action=[]
-            if self.blocksLeft[0]>0:
-                self._text=self._text+f'one big block '
-                self.exp_action.append(0)
-            if self.blocksLeft[1]>0:
-                self._text=self._text+f'one medium block '
-                self.exp_action.append(1)
-            if self.blocksLeft[2]>0:
-                self._text=self._text+f'one small block '
-                self.exp_action.append(2)
-            self._text=self._text+'.'
-        return self._text
+                _name += n20[uni]
+            return _name.lower(),hun,ten,uni    
+        word_name,hun,ten,uni = get_word_name(no)
+        if hun:
+            exp_actions = exp_actions + [0,3]*hun
+            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} hundredth block .' if _%2 ==0  else 'Put the hundredth block in the hundredth\'s palce .' for _ in range(2*hun)]
+        if ten:
+            exp_actions = exp_actions + [1,4]*ten
+            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} tenth block .' if _%2 ==0  else 'Put the tenth block in the tenth\'s palce .' for _ in range(2*ten)]
+        if ten:
+            exp_actions = exp_actions + [2,5]*uni    
+            instructions = instructions  +  [f'Next , pick up the {spell[_//2+1]} unit block .' if _%2 ==0  else 'Put the unit block in the unit\'s palce .' for _ in range(2*uni)]       
+        instructions[0] = f"This is {word_name}. Let's use our blocks to build the number. To build {word_name}"+instructions[0][len("Next"):]
+        return instructions, exp_actions
 ############################################
     def step(self, action):
 
@@ -150,10 +159,15 @@ class RlNlpWorld(gym.Env):
         elif action==ACTION.PUT_SMALL.value:
             reward=put(BOXTYPE.SMALL)
 
-        reward= 1 if action in self.exp_action else reward
+        '''Extra reward for following instructions'''
+        # reward= 1 if action in self.exp_actions else reward
+        vga.carry_indicator=self.carry
         self._visual=vga.drawAgain()
-        self._text=self.getNLP()
-        self.curr_time+=1
+        if action == self.exp_actions[self.nlp_index]:
+            self.nlp_index += 1
+        if self.nlp_index<len(self.instructions):
+            self._text = self.instructions[self.nlp_index]
+        self.curr_time += 1
         solution=checkSolution() # return True is solution is correct
         terminated=False 
         if self.curr_time>self.mx_timeSteps or solution==True:
@@ -175,3 +189,4 @@ class RlNlpWorld(gym.Env):
     def close(self):
         vga.close_pyame()
 ############################################
+

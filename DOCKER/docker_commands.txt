@@ -5,3 +5,29 @@ sudo docker ps
 sudo docker kill <container-id>
 sudo docker exec -it <container_id_or_name> bash
 
+To develop using docker
+
+Syntax: docker run -v <host_path>:<container_path> <image_name>
+
+Example:
+	docker run -v ~/Desktop/Docker_Examples:/NLP_RL_Docker_Version dummy_image_to_delete
+	> To save changes
+	docker stop <image-name>
+	docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]
+	'''
+		Replace CONTAINER with the container ID or name you want to commit.
+		Replace REPOSITORY with the name you want to give to the new image.
+		Replace TAG (optional) with a specific tag for the image.
+	'''
+	docker commit trusting_herschel dummy_image_to_delete:latest
+
+For this project 
+
+docker run -v ~/Desktop/NLP_RL_Docker_Version:/NLP_RL_Docker_Version rl_nlp
+~ make changes & run use vscode dev container
+~ while quiting 
+docker stop <image-name>
+docker commit <container-id> <repo-name:latest>
+
+Clean dangling images & resources.
+https://www.digitalocean.com/community/tutorials/how-to-remove-docker-images-containers-and-volumes
