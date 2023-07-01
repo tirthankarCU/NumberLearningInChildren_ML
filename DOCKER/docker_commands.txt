@@ -28,3 +28,6 @@ docker run -v ~/Desktop/NLP_RL_Docker_Version:/NLP_RL_Docker_Version rl_nlp
 ~ while quiting 
 docker stop <image-name>
 docker commit <container-id> <repo-name:latest>
+
+Clean dangling images & resources.
+https://www.digitalocean.com/community/tutorials/how-to-remove-docker-images-containers-and-volumes
