@@ -69,3 +69,10 @@ def get(state):
     state=data
     state["visual"]=np.array(state["visual"])
     return state
+
+def pre_process(state):
+    state["visual"] = torch.FloatTensor([state["visual"]])
+    temp_vis=torch.squeeze(state["visual"])
+    temp_vis=temp_vis.transpose(0,1).transpose(0,2) 
+    state["visual"]=torch.unsqueeze(temp_vis,dim=0)
+    return state["visual"]

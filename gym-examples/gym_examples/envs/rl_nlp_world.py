@@ -50,13 +50,13 @@ class RlNlpWorld(gym.Env):
             "progress": "currently feature not required."
         }
 ############################################
-    def reset(self, set_no=-1, mx_timeSteps=50,seed=None, options=None):
+    def reset(self, set_no=-1, seed=None, options=None):
         super().reset(seed=seed)
-        self.mx_timeSteps,self.curr_time=mx_timeSteps,0
         if set_no==-1:
             self.no=np.random.randint(1,1000)
         else:
             self.no=set_no
+        self.mx_timeSteps,self.curr_time=int(sum(RlNlpWorld.split_no(self.no))*2*1.25),0 # 1.25 is the buffer given to solve the problem
         ## Gen initial info ##
         self.carry=False
         self.blocksLeft=[ (self.no//10**i)%10 for i in range(3) ]
@@ -66,9 +66,12 @@ class RlNlpWorld(gym.Env):
         self.instructions,self.exp_actions = RlNlpWorld.getNLP(self.no)
         self.nlp_index = 0
         self._text = self.instructions[self.nlp_index]
-        self.nlp_index = self.nlp_index+1
         return self._get_obs()
 ############################################
+    @staticmethod
+    def split_no(no):
+        hun,ten,uni = no//100, (no - (no//100)*100)//10, no%10
+        return hun,ten,uni
     @staticmethod
     def getNLP(no):
         global spell
@@ -81,10 +84,7 @@ class RlNlpWorld(gym.Env):
                     "Eight",   "Nine",      "Ten",      "Eleven",
                     "Twelve",  "Thirteen",  "Fourteen", "Fifteen",
                     "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
-            def split_no(no):
-                hun,ten,uni = no//100, (no - (no//100)*100)//10, no%10
-                return hun,ten,uni
-            hun, ten, uni = split_no(no)
+            hun, ten, uni = RlNlpWorld.split_no(no)
             _name = ''
             if hun: 
                 _name += n20[hun] + " hundred " 
@@ -103,7 +103,7 @@ class RlNlpWorld(gym.Env):
         if ten:
             exp_actions = exp_actions + [1,4]*ten
             instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} tenth block .' if _%2 ==0  else 'Put the tenth block in the tenth\'s palce .' for _ in range(2*ten)]
-        if ten:
+        if uni:
             exp_actions = exp_actions + [2,5]*uni    
             instructions = instructions  +  [f'Next , pick up the {spell[_//2+1]} unit block .' if _%2 ==0  else 'Put the unit block in the unit\'s palce .' for _ in range(2*uni)]       
         instructions[0] = f"This is {word_name}. Let's use our blocks to build the number. To build {word_name}"+instructions[0][len("Next"):]
@@ -163,7 +163,7 @@ class RlNlpWorld(gym.Env):
         # reward= 1 if action in self.exp_actions else reward
         vga.carry_indicator=self.carry
         self._visual=vga.drawAgain()
-        if action == self.exp_actions[self.nlp_index]:
+        if action == self.exp_actions[self.nlp_index] and self.nlp_index<len(self.instructions)-1:
             self.nlp_index += 1
         if self.nlp_index<len(self.instructions):
             self._text = self.instructions[self.nlp_index]

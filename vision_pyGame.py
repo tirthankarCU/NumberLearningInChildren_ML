@@ -9,7 +9,8 @@ MX_NO_OF_DIGITS=3
 FPS=1000000
 rm=0
 frac=0.25
-WIDTH, HEIGHT = int(900*frac), int(600*frac)
+# WIDTH, HEIGHT = int(900*frac), int(600*frac)
+WIDTH, HEIGHT = 224, 224
 WIN = None
 constructArrElement=[[] for _ in range(MX_NO_OF_DIGITS)]
 '''
@@ -198,7 +199,7 @@ def draw_main(render_mode,fps,no):
         no=no//10
     drawWindowOneTime(no_list)
     if True:
-        clock.tick(FPS)
+        #clock.tick(FPS)
         return drawAgain()
 
 def close_pyame():
