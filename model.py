@@ -20,14 +20,9 @@ class NNModel(nn.Module):
         # ResNet18
         self.resnet=models.resnet18(pretrained=True)
         num_dim_in=self.resnet.fc.in_features
-        num_dim_out=1000
+        num_dim_out=1024
         self.resnet.fc=nn.Linear(num_dim_in,num_dim_out)
-        # image_size=128*128
-        # self.fcResNet0=nn.Sequential(
-        #     nn.Linear(num_dim_out,image_size),
-        #     nn.ReLU()
-        # )
-        self.important_features_image=1000
+        self.important_features_image=512
         self.fcResNet1=nn.Sequential(
             nn.Linear(num_dim_out,self.important_features_image),
             nn.ReLU()
@@ -38,19 +33,12 @@ class NNModel(nn.Module):
         for i, (name, param) in enumerate(self.resnet.named_parameters()):
             if name[:len(layerNotTrainable)]=='layer4':
                 param.requires_grad=True
-        '''
-        # gpt-2
-        tokenizer = AutoTokenizer.from_pretrained('gpt2')
-        model = AutoModelForCausalLM.from_pretrained('gpt2')
-        '''
         # DQN
         self.noOfActions=6
-        randDQNSz=100
-        self.dqn=nn.Sequential(
-            nn.Linear(self.noOfActions+self.important_features_image,randDQNSz),
+        self.actor_critic=nn.Sequential(
+            nn.Linear(self.important_features_image,self.important_features_image//2),
             nn.ReLU(),
-            nn.Linear(randDQNSz,1),
-            nn.ReLU()
+            nn.Linear(self.important_features_image//2,self.noOfActions)
         )
     def forward(self,image,action):
         op=self.resnet(image)
@@ -71,20 +59,13 @@ class NNModel(nn.Module):
 '''
 def lossDqn(p,y):
     return torch.mean((p-y)**2)
-# def lossImage(img_yp,img_y):
-#     sz=img_y.shape
-#     img_y=img_y.reshape(sz[0],sz[-1]*sz[-2])
-#     return torch.mean((img_yp-img_y)**2)
-# def train(model,reward_true,STATE,NEXT_STATE,ACTION,device,optim,type='dqn',verbose=False):
+
 def train(model,reward_true,STATE,ACTION,device,optim,type='dqn',verbose=False):
     global epochA
     # IF YOU NEED TO ENABLE IMAGE TRAINING REMOVE THE FOLLOWING IF CONDITION.
     if type=='image':
         return 
     model.train()
-    # IMG_X,IMG_Y=np.array([_state_["visual"] for _state_ in STATE]),np.array([_state_["visual"] for _state_ in NEXT_STATE])/255
-    # IMG_X,IMG_Y=torch.from_numpy(IMG_X),torch.from_numpy(IMG_Y)
-    # IMG_X,IMG_Y=IMG_X.to(device),IMG_Y.to(device) # it should be torch
     IMG_X=np.array([_state_["visual"] for _state_ in STATE])
     IMG_X=torch.from_numpy(IMG_X)
     IMG_X=IMG_X.to(device)
@@ -98,11 +79,6 @@ def train(model,reward_true,STATE,ACTION,device,optim,type='dqn',verbose=False):
         loss_dqn=lossDqn(Q,reward_true)
         loss_dqn.backward()
         optim.step()
-    # elif type=='image': # Putting if-else is necessary otherwise there is an issue calculating gradient & doing back prop. 
-    #     optim.zero_grad()
-    #     loss_image=lossImage(IMG_YP,IMG_Y)
-    #     loss_image.backward()
-    #     optim.step() 
     if (epochA//2) % 50 == 0 or verbose:
         print(f'Train Epoch:{epochA} DQN_Loss:{loss_dqn} IMG_Loss:{loss_image}')
     epochA+=1

@@ -180,6 +180,10 @@ class RlNlpWorld(gym.Env):
         info = self._get_info()
         return observation, reward, terminated, info
 ############################################
+    @property
+    def threshold_reward(self):
+        return 10
+############################################
     def render(self):
         pass 
 ############################################
