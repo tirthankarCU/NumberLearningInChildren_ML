@@ -13,7 +13,6 @@ import torch.optim as optim
 import matplotlib.pyplot as plt 
 import json
 import copy
-import subprocess
 import gym 
 import gym_examples
 import time
@@ -74,7 +73,6 @@ def RESETS(envs):
     if train_set_counter>=len(train_set):
         train_set_counter=0
     train_set_counter+=1
-    print(f'TM {set_number}')
     return envs.reset(set_no=set_number)
 
 
@@ -164,7 +162,8 @@ if __name__=='__main__':
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     max_episodes = 1000
-    max_steps_per_episode = 100
+    max_steps_per_episode_list=[20,32,64,4] # my_estimation
+    max_steps_per_episode = max_steps_per_episode_list[args.ease]
     max_frames = max_episodes * max_steps_per_episode
     frame_idx = 0
     early_stopping = False
@@ -214,15 +213,14 @@ if __name__=='__main__':
                 statesArr.append(state["visual"])
             else:
                 pass
-
             state = copy.deepcopy(next_state)
-            frame_idx += 1
-
-            if frame_idx-1 % 1000 == 0:
+            if frame_idx % 1000 == 0:
                 test_reward = np.mean([test_env(model) for _ in range(5)])
                 test_rewards.append([frame_idx,test_reward])
+                with open('results/test_reward_list.json', 'w') as file:
+                    json.dump(test_rewards, file)
                 if test_reward > threshold_reward: early_stop = True
-                
+            frame_idx += 1
             if done: break
 
         _, next_value = model(next_state["visual"])
@@ -236,3 +234,4 @@ if __name__=='__main__':
         advantage = returns - valuesArr
         temp_mini_batch_size = min(_iter,mini_batch_size)
         ppo_update(model, optimizer, ppo_epochs, temp_mini_batch_size, statesArr, actionsArr, log_probsArr, returns, advantage)
+        torch.save(model.state_dict(),'results/model.ml')
