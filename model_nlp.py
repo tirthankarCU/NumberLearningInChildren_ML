@@ -60,7 +60,7 @@ class NNModelNLP(nn.Module):
         )
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
-    def forward(self,image,text,action):
+    def forward(self,image,text):
         image = image.to(self.device)
         op = self.resnet(image)
         opR1 = self.fcResNet1(op)
@@ -72,7 +72,7 @@ class NNModelNLP(nn.Module):
             opR1 = opR1.to(torch.device("cuda:0")) 
             opR2 = opR2.to(torch.device("cuda:0")) 
         mu_dist = Categorical(logits=self.actor(torch.cat([opR2,opR1],dim=1)))
-        value = self.actor(torch.cat([opR2,opR1],dim=1))
+        value = self.critic(torch.cat([opR2,opR1],dim=1))
         return mu_dist,value 
 
     def display(self):

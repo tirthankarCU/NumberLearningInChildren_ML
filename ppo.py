@@ -6,6 +6,7 @@ import pandas as pd
 import time
 import utils as U
 import model as M
+import model_nlp as MNLP
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -80,17 +81,31 @@ def STEPS(envs,actions):
     return envs.step(actions.item())
 
 
-def ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantage):
+def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantage):
     batch_size = states.size(0)
     for _ in range(batch_size // mini_batch_size):
         rand_ids = np.random.randint(0, batch_size, mini_batch_size)
-        yield states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
+        if args.model == 0:
+            yield states[rand_ids, :], states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
+        else:
+            temp_dict = {}
+            for r_indx in rand_ids:
+                temp = statesNlpArr[r_indx]
+                for key,value in temp.items():
+                    if key not in temp_dict:
+                        temp_dict[key] = value
+                    else:
+                        temp_dict[key] = torch.cat((temp_dict[key],value),dim = 0)
+            yield states[rand_ids, :], temp_dict, actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
 
 
-def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, actions, log_probs, returns, advantages, clip_param=0.2):
+def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp, actions, log_probs, returns, advantages, clip_param=0.2):
     for _ in range(ppo_epochs):
-        for state, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, actions, log_probs, returns, advantages):
-            dist, value = model(state)
+        for state, stateNlp, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantages):
+            if args.model == 0:
+                dist, value = model(state)
+            elif args.model == 1:
+                dist, value = model(state,stateNlp)
             entropy = dist.entropy().mean()
             new_log_probs = dist.log_prob(action)
 
@@ -122,18 +137,27 @@ def test_env(model):
     global env, max_steps_per_episode, device 
     state = RESETS(env)
     state["visual"] = U.pre_process(state)
+    if args.model == 1:
+        state["text"] = U.pre_process_text(model,state)
     cum_reward=0
     for _ in range(max_steps_per_episode):
-        dist, value = model(state["visual"])      
+        if args.model == 0:
+            dist, value = model(state["visual"])
+        elif args.model == 1:
+            dist, value = model(state['visual'],state['text'])   
         action = dist.sample()
         next_state, reward, done, info = STEPS(env,action.cpu().numpy())
         next_state["visual"] = U.pre_process(next_state)
+        if args.model == 1:
+            next_state["text"] = U.pre_process_text(model,next_state)
         state=copy.deepcopy(next_state)
         cum_reward += reward 
         if done: break
     return cum_reward
 
-def gen_data(opt):
+def gen_data(opt): 
+    if opt<0: return [], []
+    global suffix
     def sum_digits(no)->int:
         res=0
         while no!=0:
@@ -151,9 +175,14 @@ def gen_data(opt):
             valid.append(i)
     m=int(len(valid)*0.8)
     np.random.shuffle(valid)
+    with open(f'results/train_set{suffix[args.model][args.ease]}.json', 'w') as file:
+        json.dump(valid[:m], file)
+    with open(f'results/test_set{suffix[args.model][args.ease]}.json', 'w') as file:
+        json.dump(valid[m:], file)
     return valid[:m],valid[m:]
                 
 if __name__=='__main__':
+    suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
     parser = argparse.ArgumentParser(description='NLP_RL parameters.')
     parser.add_argument('--model',type=int,help='Type of the model.')
     parser.add_argument('--ease',type=int,help='Level of ease you want to train.')
@@ -176,54 +205,67 @@ if __name__=='__main__':
         model = M.NNModel().to(device) 
     # threshold_reward = envs[0].threshold_reward
     elif args.model == 1: # NLP CNN model
-        pass 
+        model = MNLP.NNModelNLP().to(device)
     threshold_reward = env.threshold_reward
     optimizer = optim.Adam(model.parameters(), lr=lr)
     test_rewards = []
     
+    _start_time = time.time()
     prev_time=time.time()
     while frame_idx < max_frames:
         if early_stopping: break
         if time.time()-prev_time>60:
             prev_time=time.time()
-            print(f'% Exec Left {frame_idx*100/max_frames}')
+            print(f'% Exec Left {100-(frame_idx*100/max_frames)}; Time Consumed {time.time()-_start_time} sec')
         log_probsArr = []
         valuesArr    = []
-        statesArr    = []
+        statesArr,statesNlpArr    = [],[]
         actionsArr   = []
         rewardsArr   = []
         masksArr     = []
         entropy = 0
         state = RESETS(env)
         state["visual"] = U.pre_process(state)
+        if args.model == 1:
+            state["text"] = U.pre_process_text(model,state)
         for _iter in range(max_steps_per_episode):
-            dist, value = model(state["visual"])
+            if args.model == 0:
+                dist, value = model(state["visual"])
+            elif args.model == 1:
+                dist, value = model(state['visual'],state['text'])
             action = dist.sample()
             next_state, reward, done, info = STEPS(env,action.cpu().numpy())
             next_state["visual"] = U.pre_process(next_state)
+            if args.model == 1:
+                next_state["text"] = U.pre_process_text(model,next_state)
             log_prob = dist.log_prob(action)
             entropy += dist.entropy().mean()
-
             valuesArr.append(value)
             log_probsArr.append(torch.FloatTensor([log_prob]).unsqueeze(1).to(device))
             rewardsArr.append(torch.FloatTensor([reward]).unsqueeze(1).to(device))
             masksArr.append(torch.FloatTensor([1 - done]).unsqueeze(1).to(device))
             actionsArr.append(torch.FloatTensor([action]).unsqueeze(1).to(device))
+            
             if args.model == 0:
                 statesArr.append(state["visual"])
-            else:
-                pass
+            elif args.model == 1:
+                statesArr.append(state["visual"])
+                statesNlpArr.append(state["text"])
+                
             state = copy.deepcopy(next_state)
             if frame_idx % 1000 == 0:
                 test_reward = np.mean([test_env(model) for _ in range(5)])
                 test_rewards.append([frame_idx,test_reward])
-                with open('results/test_reward_list.json', 'w') as file:
+                with open(f'results/test_reward_list_{suffix[args.model][args.ease]}.json', 'w') as file:
                     json.dump(test_rewards, file)
                 if test_reward > threshold_reward: early_stop = True
             frame_idx += 1
             if done: break
 
-        _, next_value = model(next_state["visual"])
+        if args.model ==0:
+            _, next_value = model(next_state["visual"])
+        elif args.model == 1:
+            _, next_value = model(next_state["visual"],next_state['text'])
         returns = compute_gae(next_value, rewardsArr, masksArr, valuesArr)
 
         returns   = torch.cat(returns).detach()
@@ -233,5 +275,5 @@ if __name__=='__main__':
         actionsArr   = torch.cat(actionsArr)
         advantage = returns - valuesArr
         temp_mini_batch_size = min(_iter,mini_batch_size)
-        ppo_update(model, optimizer, ppo_epochs, temp_mini_batch_size, statesArr, actionsArr, log_probsArr, returns, advantage)
-        torch.save(model.state_dict(),'results/model.ml')
+        ppo_update(model, optimizer, ppo_epochs, temp_mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
+        torch.save(model.state_dict(),f'results/model_{suffix[args.model][args.ease]}.ml')
