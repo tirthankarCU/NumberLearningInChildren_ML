@@ -29,45 +29,6 @@ import numpy as np
     medium_1
     difficult_2
 '''
-
-def run_best_env():
-    number=999
-    f,s,t = number//100,(number%100)//10,number%10
-    exp_action = [0,3]*f + [1,4]*s + [2,5]*t
-    exp_action_indx = 0
-    def human_policy(observation):
-        nonlocal exp_action_indx
-        # action=int(input())
-        try:
-            action = exp_action[exp_action_indx]
-            exp_action_indx += 1
-        except Exception as e:
-            action = -1
-        return action
-    dbg=False 
-    episodes=1
-    env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
-    for _ in range(episodes):
-        cumulative_reward,steps=0,0
-        observation = env.reset(set_no=number,mx_timeSteps=100,seed=42)
-        mx_iter=60
-        while steps<mx_iter:
-            print(observation['text'])
-            if dbg==True:
-                plt.imshow(observation['visual'])
-                plt.show()
-            action = human_policy(observation)  # User-defined policy function
-            observation, reward, terminated, info = env.step(action)
-            cumulative_reward+=reward
-            steps+=1
-            if dbg==True:
-                print(f'cumulative_reward {cumulative_reward}; action {action}')
-            if terminated:
-                break
-        print(f'Cumulative Reward ~ {cumulative_reward}; TimeTaken ~ {steps}')
-    env.close()
-
-
 def RESETS(envs):
     global train_set_counter, train_set, args
     set_number=train_set[train_set_counter] if args.ease>=0 else -1
