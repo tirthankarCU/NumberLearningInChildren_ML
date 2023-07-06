@@ -56,7 +56,7 @@ class RlNlpWorld(gym.Env):
             self.no=np.random.randint(1,1000)
         else:
             self.no=set_no
-        self.mx_timeSteps,self.curr_time=int(sum(RlNlpWorld.split_no(self.no))*2*1.25),0 # 1.25 is the buffer given to solve the problem
+        self.mx_timeSteps,self.curr_time=int(sum(RlNlpWorld.split_no(self.no))*2*5),0 # 5 times is the buffer given to solve the problem
         ## Gen initial info ##
         self.carry=False
         self.blocksLeft=[ (self.no//10**i)%10 for i in range(3) ]

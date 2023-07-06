@@ -77,7 +77,7 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
             actor_loss  = - torch.min(surr1, surr2).mean()
             critic_loss = (return_ - value).pow(2).mean()
 
-            loss = 0.5 * critic_loss + actor_loss - 0.001 * entropy
+            loss = 0.5 * critic_loss + actor_loss - 0.0001 * entropy
 
             optimizer.zero_grad()
             loss.backward()
@@ -151,8 +151,8 @@ if __name__=='__main__':
     train_set,test_set=gen_data(args.ease)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    max_episodes = 1000
-    max_steps_per_episode_list=[20,32,64,4] # my_estimation
+    max_episodes = 5000
+    max_steps_per_episode_list=[25,50,75,5] # my_estimation
     max_steps_per_episode = max_steps_per_episode_list[args.ease]
     max_frames = max_episodes * max_steps_per_episode
     frame_idx = 0

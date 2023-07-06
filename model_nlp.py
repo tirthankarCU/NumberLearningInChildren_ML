@@ -35,7 +35,7 @@ class NNModelNLP(nn.Module):
         # BERT
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.bert = BertModel.from_pretrained('bert-base-uncased')
-        self.mxSentenceLength=50
+        self.mxSentenceLength=32
         for param in self.bert.parameters():
             param.requires_grad=False 
         self.bert_hidden=self.bert.config.hidden_size
