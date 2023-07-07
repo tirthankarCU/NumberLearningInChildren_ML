@@ -16,6 +16,7 @@ import json
 import copy
 import gym 
 import gym_examples
+import math
 import time
 import numpy as np 
 '''
@@ -44,7 +45,7 @@ def STEPS(envs,actions):
 
 def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantage):
     batch_size = states.size(0)
-    for _ in range(batch_size // mini_batch_size):
+    for _ in range(math.ceil(batch_size / mini_batch_size)):
         rand_ids = np.random.randint(0, batch_size, mini_batch_size)
         if args.model == 0:
             yield states[rand_ids, :], states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
@@ -77,7 +78,7 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
             actor_loss  = - torch.min(surr1, surr2).mean()
             critic_loss = (return_ - value).pow(2).mean()
 
-            loss = 0.5 * critic_loss + actor_loss - 0.0001 * entropy
+            loss = 0.5 * critic_loss + actor_loss - 0.005 * entropy
 
             optimizer.zero_grad()
             loss.backward()
@@ -151,8 +152,8 @@ if __name__=='__main__':
     train_set,test_set=gen_data(args.ease)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    max_episodes = 5000
-    max_steps_per_episode_list=[25,50,75,5] # my_estimation
+    max_episodes = 1000
+    max_steps_per_episode_list=[25,50,75,2] # my_estimation
     max_steps_per_episode = max_steps_per_episode_list[args.ease]
     max_frames = max_episodes * max_steps_per_episode
     frame_idx = 0
@@ -160,7 +161,7 @@ if __name__=='__main__':
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
     # Neural Network Hyper params:
     lr               = 1e-3
-    mini_batch_size  = 8
+    mini_batch_size  = 5
     ppo_epochs       = 4
     if args.model == 0: # Naive model
         model = M.NNModel().to(device) 
@@ -237,4 +238,4 @@ if __name__=='__main__':
         advantage = returns - valuesArr
         temp_mini_batch_size = min(_iter,mini_batch_size)
         ppo_update(model, optimizer, ppo_epochs, temp_mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
-        torch.save(model.state_dict(),f'results/model_{suffix[args.model][args.ease]}.ml')
+    torch.save(model.state_dict(),f'results/model_{suffix[args.model][args.ease]}.ml')

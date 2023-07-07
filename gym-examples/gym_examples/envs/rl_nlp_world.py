@@ -118,13 +118,13 @@ class RlNlpWorld(gym.Env):
                         self.carry=True 
                         self.boxType=b_type
                         box.isEmpty=True
-                        return 0 
+                        return -1 
             else:
-                return -1
+                return -2
             
         def put(b_type):
             if self.carry==False or self.boxType!=b_type:
-                return -1
+                return -2
             self.boxType=BOXTYPE.NONE 
             self.carry=False 
             # constructArrElement is where the blocks are put. 
@@ -132,7 +132,7 @@ class RlNlpWorld(gym.Env):
             for box in vga.constructArrElement[b_type.value-1]:
                 if box.isEmpty:
                     box.isEmpty=False 
-                    return 0 
+                    return -1
                 
         def checkSolution():
             result,power=0,100
