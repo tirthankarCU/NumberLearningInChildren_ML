@@ -32,15 +32,15 @@ import numpy as np
 '''
 def RESETS(envs):
     global train_set_counter, train_set, args
-    set_number=train_set[train_set_counter] if args.ease>=0 else -1
+    set_number=train_set[train_set_counter] if args.ease>=0 else 1
     if train_set_counter>=len(train_set):
         train_set_counter=0
     train_set_counter+=1
     return envs.reset(set_no=set_number)
 
 
-def STEPS(envs,actions):
-    return envs.step(actions.item())
+def STEPS(envs,action):
+    return envs.step(action)
 
 
 def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantage):
@@ -62,6 +62,7 @@ def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, ad
 
 
 def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp, actions, log_probs, returns, advantages, clip_param=0.2):
+    global frame_idx
     for _ in range(ppo_epochs):
         for state, stateNlp, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantages):
             if args.model == 0:
@@ -77,13 +78,12 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
 
             actor_loss  = - torch.min(surr1, surr2).mean()
             critic_loss = (return_ - value).pow(2).mean()
-
-            loss = 0.5 * critic_loss + actor_loss - 0.005 * entropy
-
+            loss = 0.5 * critic_loss + actor_loss - 0.001 * entropy
+            if frame_idx % 100 == 0:
+                print(loss, critic_loss, actor_loss, entropy)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-
 
 def compute_gae(next_value, rewards, masks, values, gamma=0.99, tau=0.95):
     values = values + [next_value]
@@ -96,7 +96,8 @@ def compute_gae(next_value, rewards, masks, values, gamma=0.99, tau=0.95):
     return returns
 
 def test_env(model):
-    global env, max_steps_per_episode, device 
+    global max_steps_per_episode, device 
+    env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
     state = RESETS(env)
     state["visual"] = U.pre_process(state)
     if args.model == 1:
@@ -108,7 +109,7 @@ def test_env(model):
         elif args.model == 1:
             dist, value = model(state['visual'],state['text'])   
         action = dist.sample()
-        next_state, reward, done, info = STEPS(env,action.cpu().numpy())
+        next_state, reward, done, info = STEPS(env,action.item())
         next_state["visual"] = U.pre_process(next_state)
         if args.model == 1:
             next_state["text"] = U.pre_process_text(model,next_state)
@@ -160,9 +161,9 @@ if __name__=='__main__':
     early_stopping = False
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
     # Neural Network Hyper params:
-    lr               = 1e-3
-    mini_batch_size  = 5
-    ppo_epochs       = 4
+    lr               = 5e-3
+    mini_batch_size  = 1
+    ppo_epochs       = 2
     if args.model == 0: # Naive model
         model = M.NNModel().to(device) 
     # threshold_reward = envs[0].threshold_reward
@@ -174,6 +175,7 @@ if __name__=='__main__':
     
     _start_time = time.time()
     prev_time=time.time()
+    action_dict, reward_dict = {}, {}
     while frame_idx < max_frames:
         if early_stopping: break
         if time.time()-prev_time>60:
@@ -196,7 +198,15 @@ if __name__=='__main__':
             elif args.model == 1:
                 dist, value = model(state['visual'],state['text'])
             action = dist.sample()
-            next_state, reward, done, info = STEPS(env,action.cpu().numpy())
+            
+            if action.item() not in action_dict:
+                action_dict[action.item()] = 0
+            action_dict[action.item()] += 1
+            next_state, reward, done, info = STEPS(env,action.item())
+            if reward not in reward_dict:
+                reward_dict[reward] = 0
+            reward_dict[reward] += 1
+            
             next_state["visual"] = U.pre_process(next_state)
             if args.model == 1:
                 next_state["text"] = U.pre_process_text(model,next_state)
@@ -215,15 +225,15 @@ if __name__=='__main__':
                 statesNlpArr.append(state["text"])
                 
             state = copy.deepcopy(next_state)
-            if frame_idx % 1000 == 0:
+            if frame_idx % 100 == 0:
                 test_reward = np.mean([test_env(model) for _ in range(5)])
                 test_rewards.append([frame_idx,test_reward])
+                print(action_dict, reward_dict)
                 with open(f'results/test_reward_list_{suffix[args.model][args.ease]}.json', 'w') as file:
                     json.dump(test_rewards, file)
                 if test_reward > threshold_reward: early_stop = True
             frame_idx += 1
             if done: break
-
         if args.model ==0:
             _, next_value = model(next_state["visual"])
         elif args.model == 1:
@@ -239,3 +249,4 @@ if __name__=='__main__':
         temp_mini_batch_size = min(_iter,mini_batch_size)
         ppo_update(model, optimizer, ppo_epochs, temp_mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
     torch.save(model.state_dict(),f'results/model_{suffix[args.model][args.ease]}.ml')
+    
