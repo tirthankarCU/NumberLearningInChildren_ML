@@ -71,16 +71,20 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
                 dist, value = model(state,stateNlp)
             entropy = dist.entropy().mean()
             new_log_probs = dist.log_prob(action)
-
+            # print(f'xx {action[0]} {dist.log_prob(action[0])} {new_log_probs}')
             ratio = (new_log_probs - old_log_probs).exp()
             surr1 = ratio * advantage
             surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advantage
-
             actor_loss  = - torch.min(surr1, surr2).mean()
             critic_loss = (return_ - value).pow(2).mean()
-            loss = 0.5 * critic_loss + actor_loss - 0.001 * entropy
+            loss = 0.5 * critic_loss + actor_loss - 0.01 * entropy
+            # print(ratio.shape, new_log_probs.shape, old_log_probs.shape, surr1.shape, surr2.shape, advantage.shape)
+            # print(loss.item(), critic_loss.item(), actor_loss.item(), entropy.item())
+            if actor_loss.item()>50:
+                print(ratio, surr1, surr2, advantage)
+                assert False 
             if frame_idx % 100 == 0:
-                print(loss, critic_loss, actor_loss, entropy)
+                print(loss.item(), critic_loss.item(), actor_loss.item(), entropy.item())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -146,24 +150,26 @@ def gen_data(opt):
                 
 if __name__=='__main__':
     suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
-    parser = argparse.ArgumentParser(description='NLP_RL parameters.')
-    parser.add_argument('--model',type=int,help='Type of the model.')
-    parser.add_argument('--ease',type=int,help='Level of ease you want to train.')
+    parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
+    parser.add_argument('--model',type = int, help = 'Type of the model.')
+    parser.add_argument('--ease',type = int, help = 'Level of ease you want to train.')
+    parser.add_argument('--iter',type = int, default=1000, help = 'Control the number of episodes.')
     args=parser.parse_args()
     train_set,test_set=gen_data(args.ease)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    max_episodes = 1000
-    max_steps_per_episode_list=[25,50,75,2] # my_estimation
+    max_episodes = args.iter
+    max_steps_per_episode_list=[25,50,100,5] # my_estimation
     max_steps_per_episode = max_steps_per_episode_list[args.ease]
     max_frames = max_episodes * max_steps_per_episode
     frame_idx = 0
     early_stopping = False
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
+    # max_advantage = 20
     # Neural Network Hyper params:
-    lr               = 5e-3
+    lr               = 1e-4
     mini_batch_size  = 1
-    ppo_epochs       = 2
+    ppo_epochs       = 1
     if args.model == 0: # Naive model
         model = M.NNModel().to(device) 
     # threshold_reward = envs[0].threshold_reward
@@ -198,7 +204,6 @@ if __name__=='__main__':
             elif args.model == 1:
                 dist, value = model(state['visual'],state['text'])
             action = dist.sample()
-            
             if action.item() not in action_dict:
                 action_dict[action.item()] = 0
             action_dict[action.item()] += 1
@@ -246,7 +251,7 @@ if __name__=='__main__':
         statesArr    = torch.cat(statesArr)
         actionsArr   = torch.cat(actionsArr)
         advantage = returns - valuesArr
-        temp_mini_batch_size = min(_iter,mini_batch_size)
-        ppo_update(model, optimizer, ppo_epochs, temp_mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
+        # assert advantage.all() < max_advantage, f'{returns} {valuesArr}'
+        ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
     torch.save(model.state_dict(),f'results/model_{suffix[args.model][args.ease]}.ml')
     
