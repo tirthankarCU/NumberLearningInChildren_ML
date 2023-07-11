@@ -19,6 +19,7 @@ import gym_examples
 import math
 import time
 import numpy as np 
+from functools import cmp_to_key
 '''
     model_0: Naive CNN
     model_1: Full NLP
@@ -30,8 +31,10 @@ import numpy as np
     medium_1
     difficult_2
 '''
-def RESETS(envs):
+def RESETS(envs, override=True):
     global train_set_counter, train_set, args
+    if not override:
+        envs.reset(set_no = train_set[-1])
     set_number=train_set[train_set_counter] if args.ease>=0 else 1
     if train_set_counter>=len(train_set):
         train_set_counter=0
@@ -80,9 +83,9 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
             loss = 0.5 * critic_loss + actor_loss - 0.01 * entropy
             # print(ratio.shape, new_log_probs.shape, old_log_probs.shape, surr1.shape, surr2.shape, advantage.shape)
             # print(loss.item(), critic_loss.item(), actor_loss.item(), entropy.item())
-            if actor_loss.item()>50:
-                print(ratio, surr1, surr2, advantage)
-                assert False 
+            # if actor_loss.item()>50:
+            #     print(ratio, surr1, surr2, advantage)
+            #     assert False 
             if frame_idx % 100 == 0:
                 print(loss.item(), critic_loss.item(), actor_loss.item(), entropy.item())
             optimizer.zero_grad()
@@ -102,7 +105,7 @@ def compute_gae(next_value, rewards, masks, values, gamma=0.99, tau=0.95):
 def test_env(model):
     global max_steps_per_episode, device 
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
-    state = RESETS(env)
+    state = RESETS(env, override=False)
     state["visual"] = U.pre_process(state)
     if args.model == 1:
         state["text"] = U.pre_process_text(model,state)
@@ -133,13 +136,16 @@ def gen_data(opt):
             no=no//10
         return res 
     valid=[]
-    for i in range(1000):
+    for i in range(1,1000):
         if opt==0 and sum_digits(i)<=9:
             valid.append(i)
         elif opt==1 and sum_digits(i)<=15:
             valid.append(i)
         elif opt==2:
             valid.append(i)
+    def compare(i1,i2):
+        return sum_digits(i1) - sum_digits(i2)
+    valid = sorted(valid,key=cmp_to_key(compare))
     m=int(len(valid)*0.8)
     np.random.shuffle(valid)
     with open(f'results/train_set{suffix[args.model][args.ease]}.json', 'w') as file:
