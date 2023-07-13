@@ -38,9 +38,10 @@ def RESETS(envs, override=True):
         temp = train_set[-1] if args.ease>=0 else 1
         envs.reset(set_no = temp)
     set_number=train_set[train_set_counter] if args.ease>=0 else 1
-    if train_set_counter>=len(train_set)-1:
-        train_set_counter=0
-    train_set_counter+=1
+    if episodeNo%time_to_learn == 0: #increment only if time to learn has passed.
+        if train_set_counter>=len(train_set)-1:
+            train_set_counter=0
+        train_set_counter+=1
     curr_number = set_number
     return envs.reset(set_no=set_number)
 
@@ -89,7 +90,7 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
             # if actor_loss.item()>50:
             #     print(ratio, surr1, surr2, advantage)
             #     assert False 
-            if frame_idx % 100 == 0:
+            if frame_idx % 1000 == 0:
                 print(loss.item(), critic_loss.item(), actor_loss.item(), entropy.item())
             optimizer.zero_grad()
             loss.backward()
@@ -148,14 +149,16 @@ def gen_data(opt):
             valid.append(i)
     def compare(i1,i2):
         return sum_digits(i1) - sum_digits(i2)
-    valid = sorted(valid,key=cmp_to_key(compare))
     m=int(len(valid)*0.8)
     np.random.shuffle(valid)
+    train, test = valid[:m],valid[m:]
+    train = sorted(train,key=cmp_to_key(compare))
+    test = sorted(test,key=cmp_to_key(compare))
     with open(f'results/train_set{suffix[args.model][args.ease]}.json', 'w') as file:
-        json.dump(valid[:m], file)
+        json.dump(train, file)
     with open(f'results/test_set{suffix[args.model][args.ease]}.json', 'w') as file:
-        json.dump(valid[m:], file)
-    return valid[:m],valid[m:]
+        json.dump(test, file)
+    return train, test
                 
 if __name__=='__main__':
     suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
@@ -167,7 +170,8 @@ if __name__=='__main__':
     train_set,test_set=gen_data(args.ease)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    max_episodes = args.iter
+    time_to_learn = 150
+    max_episodes = max(time_to_learn*len(train_set),args.iter)
     max_steps_per_episode_list=[25,50,100,5] # my_estimation
     max_steps_per_episode = max_steps_per_episode_list[args.ease]
     max_frames = max_episodes * max_steps_per_episode
@@ -191,6 +195,7 @@ if __name__=='__main__':
     _start_time = time.time()
     prev_time=time.time()
     action_dict, reward_dict = {}, {}
+    episodeNo = 0
     while frame_idx < max_frames:
         if early_stopping: break
         if time.time()-prev_time>60:
@@ -207,6 +212,7 @@ if __name__=='__main__':
         state["visual"] = U.pre_process(state)
         if args.model == 1:
             state["text"] = U.pre_process_text(model,state)
+        episodeNo += 1
         for _iter in range(max_steps_per_episode):
             if args.model == 0:
                 dist, value = model(state["visual"])
@@ -243,7 +249,7 @@ if __name__=='__main__':
                 statesNlpArr.append(state["text"])
                 
             state = copy.deepcopy(next_state)
-            if frame_idx % 100 == 0:
+            if frame_idx % 1000 == 0:
                 test_reward = np.mean([test_env(model) for _ in range(5)])
                 test_rewards.append([frame_idx,test_reward])
                 print(action_dict, reward_dict)
