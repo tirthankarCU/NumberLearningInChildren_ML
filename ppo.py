@@ -31,14 +31,17 @@ from functools import cmp_to_key
     medium_1
     difficult_2
 '''
+curr_number = -1
 def RESETS(envs, override=True):
-    global train_set_counter, train_set, args
+    global train_set_counter, train_set, args, curr_number
     if not override:
-        envs.reset(set_no = train_set[-1])
+        temp = train_set[-1] if args.ease>=0 else 1
+        envs.reset(set_no = temp)
     set_number=train_set[train_set_counter] if args.ease>=0 else 1
-    if train_set_counter>=len(train_set):
+    if train_set_counter>=len(train_set)-1:
         train_set_counter=0
     train_set_counter+=1
+    curr_number = set_number
     return envs.reset(set_no=set_number)
 
 
@@ -225,7 +228,11 @@ if __name__=='__main__':
             entropy += dist.entropy().mean()
             valuesArr.append(value)
             log_probsArr.append(torch.FloatTensor([log_prob]).unsqueeze(1).to(device))
-            rewardsArr.append(torch.FloatTensor([reward]).unsqueeze(1).to(device))
+            try:
+                rewardsArr.append(torch.FloatTensor([reward]).unsqueeze(1).to(device))
+            except Exception as e:
+                print(f'{_iter}, {curr_number}, {reward}, {actionsArr} {action}')
+                raise e
             masksArr.append(torch.FloatTensor([1 - done]).unsqueeze(1).to(device))
             actionsArr.append(torch.FloatTensor([action]).unsqueeze(1).to(device))
             

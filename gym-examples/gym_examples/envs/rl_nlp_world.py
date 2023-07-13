@@ -118,7 +118,8 @@ class RlNlpWorld(gym.Env):
                         self.carry=True 
                         self.boxType=b_type
                         box.isEmpty=True
-                        return -1 
+                        return -1
+                return -2 # If agent tries to pick a box but there are no boxes box.isEmpty == True
             else:
                 return -2
             
