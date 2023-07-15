@@ -161,7 +161,7 @@ class RlNlpWorld(gym.Env):
             reward=put(BOXTYPE.SMALL)
 
         '''Extra reward for following instructions'''
-        # reward= 1 if action in self.exp_actions else reward
+        reward= 1 if action == self.exp_actions[self.nlp_index] else reward
         vga.carry_indicator=self.carry
         self._visual=vga.drawAgain()
         if action == self.exp_actions[self.nlp_index] and self.nlp_index<len(self.instructions)-1:

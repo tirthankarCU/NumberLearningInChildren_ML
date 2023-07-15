@@ -20,6 +20,7 @@ import math
 import time
 import numpy as np 
 from functools import cmp_to_key
+import logging 
 '''
     model_0: Naive CNN
     model_1: Full NLP
@@ -78,20 +79,17 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
                 dist, value = model(state,stateNlp)
             entropy = dist.entropy().mean()
             new_log_probs = dist.log_prob(action)
-            # print(f'xx {action[0]} {dist.log_prob(action[0])} {new_log_probs}')
+            LOG.debug(f'[action | dist_logProb | dist_newlogProb] {action[0]} {dist.log_prob(action[0])} {new_log_probs}')
             ratio = (new_log_probs - old_log_probs).exp()
             surr1 = ratio * advantage
             surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advantage
             actor_loss  = - torch.min(surr1, surr2).mean()
             critic_loss = (return_ - value).pow(2).mean()
             loss = 0.5 * critic_loss + actor_loss - 0.01 * entropy
-            # print(ratio.shape, new_log_probs.shape, old_log_probs.shape, surr1.shape, surr2.shape, advantage.shape)
-            # print(loss.item(), critic_loss.item(), actor_loss.item(), entropy.item())
-            # if actor_loss.item()>50:
-            #     print(ratio, surr1, surr2, advantage)
-            #     assert False 
+            LOG.debug(f'Shapes RS[{ratio.shape}], NLPS[{new_log_probs.shape}], OLPS[{old_log_probs.shape}], S1S[{surr1.shape}], S2S[{surr2.shape}], AS[{advantage.shape}]')
+            LOG.debug(f'TL[{loss.item()}], CL[{critic_loss.item()}], AL[{actor_loss.item()}], EL[{entropy.item()}]')
             if frame_idx % 1000 == 0:
-                print(loss.item(), critic_loss.item(), actor_loss.item(), entropy.item())
+                LOG.info(f'TL[{loss.item()}], CL[{critic_loss.item()}], AL[{actor_loss.item()}], EL[{entropy.item()}]')
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -166,12 +164,16 @@ if __name__=='__main__':
     parser.add_argument('--model',type = int, help = 'Type of the model.')
     parser.add_argument('--ease',type = int, help = 'Level of ease you want to train.')
     parser.add_argument('--iter',type = int, default=1000, help = 'Control the number of episodes.')
+    parser.add_argument('--log',type = int,default = logging.WARN, help = 'import logging module and send logging.INFO or different options.')
     args=parser.parse_args()
+    logging.basicConfig(level = args.log, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
+    LOG = logging.getLogger(__name__)
     train_set,test_set=gen_data(args.ease)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    time_to_learn = 150
+    time_to_learn = 50
     max_episodes = max(time_to_learn*len(train_set),args.iter)
+    LOG.info(f'Number of Episodes Tr[{len(train_set)}]*{time_to_learn} = {max_episodes}')
     max_steps_per_episode_list=[25,50,100,5] # my_estimation
     max_steps_per_episode = max_steps_per_episode_list[args.ease]
     max_frames = max_episodes * max_steps_per_episode
@@ -198,9 +200,9 @@ if __name__=='__main__':
     episodeNo = 0
     while frame_idx < max_frames:
         if early_stopping: break
-        if time.time()-prev_time>60:
+        if time.time()-prev_time>300: # Every 5 mins
             prev_time=time.time()
-            print(f'% Exec Left {100-(frame_idx*100/max_frames)}; Time Consumed {time.time()-_start_time} sec')
+            LOG.warning(f'% Exec Left {100-(frame_idx*100/max_frames)}; Time Consumed {time.time()-_start_time} sec')
         log_probsArr = []
         valuesArr    = []
         statesArr,statesNlpArr    = [],[]
@@ -234,11 +236,7 @@ if __name__=='__main__':
             entropy += dist.entropy().mean()
             valuesArr.append(value)
             log_probsArr.append(torch.FloatTensor([log_prob]).unsqueeze(1).to(device))
-            try:
-                rewardsArr.append(torch.FloatTensor([reward]).unsqueeze(1).to(device))
-            except Exception as e:
-                print(f'{_iter}, {curr_number}, {reward}, {actionsArr} {action}')
-                raise e
+            rewardsArr.append(torch.FloatTensor([reward]).unsqueeze(1).to(device))
             masksArr.append(torch.FloatTensor([1 - done]).unsqueeze(1).to(device))
             actionsArr.append(torch.FloatTensor([action]).unsqueeze(1).to(device))
             
@@ -252,10 +250,13 @@ if __name__=='__main__':
             if frame_idx % 1000 == 0:
                 test_reward = np.mean([test_env(model) for _ in range(5)])
                 test_rewards.append([frame_idx,test_reward])
-                print(action_dict, reward_dict)
+                LOG.warning(f'Discovery {action_dict}, {reward_dict}')
                 with open(f'results/test_reward_list_{suffix[args.model][args.ease]}.json', 'w') as file:
                     json.dump(test_rewards, file)
                 if test_reward > threshold_reward: early_stop = True
+            if frame_idx % 5000 == 0:
+                LOG.info(f'Saving Model ...')
+                torch.save(model.state_dict(),f'results/model_{suffix[args.model][args.ease]}.ml')
             frame_idx += 1
             if done: break
         if args.model ==0:
