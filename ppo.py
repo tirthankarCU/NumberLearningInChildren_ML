@@ -215,7 +215,8 @@ if __name__=='__main__':
         if args.model == 1:
             state["text"] = U.pre_process_text(model,state)
         episodeNo += 1
-        for _iter in range(max_steps_per_episode):
+        extra_padding = 5
+        for _iter in range(max_steps_per_episode+extra_padding):
             if args.model == 0:
                 dist, value = model(state["visual"])
             elif args.model == 1:
@@ -228,6 +229,7 @@ if __name__=='__main__':
             if reward not in reward_dict:
                 reward_dict[reward] = 0
             reward_dict[reward] += 1
+            LOG.debug(f'Current action[{action.item()}] reward[{reward}]')
             
             next_state["visual"] = U.pre_process(next_state)
             if args.model == 1:

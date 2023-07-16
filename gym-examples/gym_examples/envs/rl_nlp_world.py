@@ -56,7 +56,7 @@ class RlNlpWorld(gym.Env):
             self.no=np.random.randint(1,1000)
         else:
             self.no=set_no
-        self.mx_timeSteps,self.curr_time=int(sum(RlNlpWorld.split_no(self.no))*2*5),0 # 5 times is the buffer given to solve the problem
+        self.mx_timeSteps,self.curr_time=int(sum(RlNlpWorld.split_no(self.no))*2*2.5),0 # 5 times is the buffer given to solve the problem
         ## Gen initial info ##
         self.carry=False
         self.blocksLeft=[ (self.no//10**i)%10 for i in range(3) ]
@@ -110,7 +110,11 @@ class RlNlpWorld(gym.Env):
         return instructions, exp_actions
 ############################################
     def step(self, action):
-
+        if action<0 or action>=6:
+            reward = -1000
+            terminated = True 
+            return self._get_obs(), reward, terminated, self._get_info()
+            
         def pick(boxArr,b_type):
             if self.carry==False:
                 for box in boxArr:
