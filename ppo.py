@@ -215,7 +215,7 @@ if __name__=='__main__':
         if args.model == 1:
             state["text"] = U.pre_process_text(model,state)
         episodeNo += 1
-        extra_padding = 5
+        extra_padding = 25
         for _iter in range(max_steps_per_episode+extra_padding):
             if args.model == 0:
                 dist, value = model(state["visual"])
