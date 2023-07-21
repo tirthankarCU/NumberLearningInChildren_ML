@@ -1,6 +1,7 @@
 import argparse
 import sys 
-sys.path.append('/NLP_RL_Docker_Version/gym-examples')
+import os
+sys.path.append(f'{os.getcwd()}/gym-examples')
 import numpy as np 
 import pandas as pd 
 import time
