@@ -31,3 +31,10 @@ docker commit <container-id> <repo-name:latest>
 
 Clean dangling images & resources.
 https://www.digitalocean.com/community/tutorials/how-to-remove-docker-images-containers-and-volumes
+
+'''
+VM
+'''
+sudo docker run -p 8888:8888 -v $(pwd):/NLP_RL_Docker_Version tirthankar95/rl-nlp &
+sudo docker ps
+sudo docker exec -it angry_lewin  bash
