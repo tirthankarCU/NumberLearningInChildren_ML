@@ -74,7 +74,7 @@ def run_agent(number,opt):
     return {"cumulative_reward":cumulative_reward,"action": actionArr, "reward": rewardArr}
 
 if __name__=='__main__':
-    models_to_test = ["model_fnlp_easy"]
+    models_to_test = ["model_naive","model_fnlp_naive","model_easy","model_fnlp_easy"]
     with open('test_path.json','r') as file:
         paths = json.load(file)
     for key,value in paths.items(): 
@@ -104,7 +104,7 @@ if __name__=='__main__':
             avg_cum += train_dict[no]["cumulative_reward"]
             LOG.info(f'[TRAIN] No[{no}] ~ Reward[{train_dict[no]["cumulative_reward"]}]')
         LOG.info(f'[IMP] train {avg_cum/len(train_set)}')
-        with open(f'{value["output_path"]}/train_dict.json', 'r') as file:
+        with open(f'{value["output_path"]}/train_dict.json', 'w') as file:
             json.dump(train_dict,file)
         LOG.info(f'Train Dict {value["output_path"]}/train_dict.json')
         
@@ -118,6 +118,6 @@ if __name__=='__main__':
             avg_cum += test_dict[no]["cumulative_reward"]
             LOG.info(f'[TEST] No[{no}] ~ Reward[{test_dict[no]["cumulative_reward"]}]')
         LOG.info(f'[IMP] test {avg_cum/len(test_set)}')
-        with open(f'{value["output_path"]}/test_dict.json','r') as file:
+        with open(f'{value["output_path"]}/test_dict.json','w') as file:
             json.dump(test_dict,file)
         LOG.info(f'Test Dict {value["output_path"]}/test_dict.json')
