@@ -1,0 +1,4 @@
+2023-07-24 06:09:34,019 - ppo_run_nointeract.py:82 - TEST NAME model_fnlp_easy
+2023-07-24 06:09:34,090 - ppo_run_nointeract.py:34 - PLOT PATH: results/easy/nlp/creward.png
+2023-07-24 06:09:37,281 - ppo_run_nointeract.py:105 - [TRAIN] No[10] ~ Reward[-17]
+2023-07-24 06:09:38,287 - ppo_run_nointeract.py:105 - [TRAIN] No[1] ~ Reward[-15]
