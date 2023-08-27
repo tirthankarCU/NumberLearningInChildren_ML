@@ -19,19 +19,25 @@ import os
 sys.path.append(f'{os.getcwd()}/gym-examples')
 import gym_examples
 
-def policyR(observation):
-    return np.random.randint(0,6)
+action_indx = -1
+def policyR(observation, number):
+    global action_indx
+    hundreth, tenth, unit = number//100, (number%100)//10, number%10
+    best_actions = [0, 3]*hundreth + [1, 4]*tenth + [2, 5]*unit
+    action_indx += 1
+    return best_actions[action_indx]
 
 dbg=True
 episodes=1
+number = 123
 env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
 for _ in range(episodes):
     cumulative_reward,steps=0,0
-    observation = env.reset(set_no = 123)
+    observation = env.reset(set_no = number)
     mx_steps,cnt=20,0
     print(f'state[{observation["text"]}]')
     while steps<mx_steps:
-        action = policyR(observation)  # User-defined policy function
+        action = policyR(observation, number)  # User-defined policy function
         observation, reward, terminated, info = env.step(action)
         cumulative_reward+=reward
         steps+=1
