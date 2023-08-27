@@ -55,8 +55,8 @@ def run_agent(number,opt):
         if opt == 1:
             observation['text'] = U.pre_process_text(model,observation)
         while True:
-            print(observation['text'])
             if dbg==True:
+                print(observation['text'])
                 plt.imshow(state['visual'])
                 plt.show()
             action = policy(observation)  # User-defined policy function
@@ -112,7 +112,7 @@ if __name__=='__main__':
         test_set, test_dict, avg_cum = [1],{},0
         if len(value["test_set"]) != 0:
             with open(f'{value["test_set"]}','r') as file_test:
-                test_dict[no] = json.load(file_test)
+                test_set = json.load(file_test)
         for no in test_set:
             test_dict[no] = run_agent(no,value["model"]["type"])
             avg_cum += test_dict[no]["cumulative_reward"]

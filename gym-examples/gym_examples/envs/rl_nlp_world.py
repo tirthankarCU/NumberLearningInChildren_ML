@@ -4,6 +4,7 @@ import pygame
 import numpy as np
 from enum import Enum 
 import vision_pyGame as vga
+from create_nlp_instructions import *
 '''
 ACTIONS
 '''
@@ -24,7 +25,6 @@ class BOXTYPE(Enum):
     MEDIUM=2
     SMALL=3
 
-spell={1:'first',2:'second',3:'third',4:'fourth',5:'fifth',6:'sixth',7:'seventh',8:'eighth',9:'ninth'}
 class RlNlpWorld(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 1000000}
 ############################################
@@ -56,58 +56,19 @@ class RlNlpWorld(gym.Env):
             self.no=np.random.randint(1,1000)
         else:
             self.no=set_no
-        self.mx_timeSteps,self.curr_time=int(sum(RlNlpWorld.split_no(self.no))*2*2.5),0 # 5 times is the buffer given to solve the problem
+        self.nlp_obj = CreateInstructions(self.no, type = 'state')
+        self.mx_timeSteps,self.curr_time=int(sum(self.nlp_obj.split_no(self.no))*2*2.5),0 # 5 times is the buffer given to solve the problem
         ## Gen initial info ##
         self.carry=False
         self.blocksLeft=[ (self.no//10**i)%10 for i in range(3) ]
         self.blocksLeft.reverse()
         self.boxType=BOXTYPE.NONE
         self._visual=vga.draw_main(self.metadata['render_modes'][self.mode],self.metadata['render_fps'],self.no)
-        self.instructions,self.exp_actions = RlNlpWorld.getNLP(self.no)
-        self.nlp_index = 0
-        self._text = self.instructions[self.nlp_index]
+        self._text = self.nlp_obj.get_next_instructions(state_def = \
+                                                        (self.blocksLeft, 
+                                                         self.carry, 
+                                                         self.boxType.value))
         return self._get_obs()
-############################################
-    @staticmethod
-    def split_no(no):
-        hun,ten,uni = no//100, (no - (no//100)*100)//10, no%10
-        return hun,ten,uni
-    @staticmethod
-    def getNLP(no):
-        global spell
-        instructions = []
-        exp_actions = []
-        def get_word_name(no):
-            digit10 = ["", "Twenty",  "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety" ]
-            n20 = [  "",       "One",       "Two",      "Three",
-                    "Four",    "Five",      "Six",      "Seven",
-                    "Eight",   "Nine",      "Ten",      "Eleven",
-                    "Twelve",  "Thirteen",  "Fourteen", "Fifteen",
-                    "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
-            hun, ten, uni = RlNlpWorld.split_no(no)
-            _name = ''
-            if hun: 
-                _name += n20[hun] + " hundred " 
-            if ten:
-                if ten*10<20:
-                    _name += n20[ten*10+uni]
-                else:
-                    _name += digit10[ten-1] + " " + n20[uni]
-            else:
-                _name += n20[uni]
-            return _name.lower(),hun,ten,uni    
-        word_name,hun,ten,uni = get_word_name(no)
-        if hun:
-            exp_actions = exp_actions + [0,3]*hun
-            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} hundredth block .' if _%2 ==0  else 'Put the hundredth block in the hundredth\'s palce .' for _ in range(2*hun)]
-        if ten:
-            exp_actions = exp_actions + [1,4]*ten
-            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} tenth block .' if _%2 ==0  else 'Put the tenth block in the tenth\'s palce .' for _ in range(2*ten)]
-        if uni:
-            exp_actions = exp_actions + [2,5]*uni    
-            instructions = instructions  +  [f'Next , pick up the {spell[_//2+1]} unit block .' if _%2 ==0  else 'Put the unit block in the unit\'s palce .' for _ in range(2*uni)]       
-        instructions[0] = f"This is {word_name}. Let's use our blocks to build the number. To build {word_name}"+instructions[0][len("Next"):]
-        return instructions, exp_actions
 ############################################
     def step(self, action):
         if action<0 or action>=6:
@@ -167,11 +128,13 @@ class RlNlpWorld(gym.Env):
         '''Extra reward for following instructions'''
         vga.carry_indicator=self.carry
         self._visual=vga.drawAgain()
-        if action == self.exp_actions[self.nlp_index] and self.nlp_index<len(self.instructions)-1:
-            self.nlp_index += 1
+        if action == self.nlp_obj.get_next_actions():
+            self.nlp_obj.incr()
             reward = 1
-        if self.nlp_index<len(self.instructions):
-            self._text = self.instructions[self.nlp_index]
+        self._text = self.nlp_obj.get_next_instructions(state_def = \
+                                                        (self.blocksLeft, 
+                                                         self.carry, 
+                                                         self.boxType.value))
         self.curr_time += 1
         solution=checkSolution() # return True is solution is correct
         terminated=False 

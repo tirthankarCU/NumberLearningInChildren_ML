@@ -86,7 +86,7 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
             surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advantage
             actor_loss  = - torch.min(surr1, surr2).mean()
             critic_loss = (return_ - value).pow(2).mean()
-            loss = 0.5 * critic_loss + actor_loss - 0.01 * entropy
+            loss = 0.5 * critic_loss + actor_loss - 0.1 * entropy
             LOG.debug(f'Shapes RS[{ratio.shape}], NLPS[{new_log_probs.shape}], OLPS[{old_log_probs.shape}], S1S[{surr1.shape}], S2S[{surr2.shape}], AS[{advantage.shape}]')
             LOG.debug(f'TL[{loss.item()}], CL[{critic_loss.item()}], AL[{actor_loss.item()}], EL[{entropy.item()}]')
             if frame_idx % 1000 == 0:
@@ -183,7 +183,7 @@ if __name__=='__main__':
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
     # max_advantage = 20
     # Neural Network Hyper params:
-    lr               = 1e-4
+    lr               = 1e-5
     mini_batch_size  = 1
     ppo_epochs       = 1
     if args.model == 0: # Naive model
