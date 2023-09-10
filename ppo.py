@@ -3,6 +3,7 @@ import sys
 import os
 sys.path.append(f'{os.getcwd()}/gym-examples')
 import numpy as np 
+np.random.seed(seed = 2023)
 import pandas as pd 
 import time
 import utils as U
@@ -183,7 +184,7 @@ if __name__=='__main__':
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
     # max_advantage = 20
     # Neural Network Hyper params:
-    lr               = 1e-5
+    lr               = 9e-6
     mini_batch_size  = 1
     ppo_epochs       = 1
     if args.model == 0: # Naive model

@@ -59,6 +59,11 @@ class NNModelNLP(nn.Module):
             nn.Linear(self.important_features_image//2,1)
         )
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # DQN for transfer task
+        self.transfer = nn.Sequential(
+                                        nn.Linear(self.noOfActions),
+                                        nn.Softmax(dim = 1)
+                                     )
         
     def forward(self,image,text):
         image = image.to(self.device)
@@ -74,6 +79,21 @@ class NNModelNLP(nn.Module):
         mu_dist = Categorical(logits=self.actor(torch.cat([opR2,opR1],dim=1)))
         value = self.critic(torch.cat([opR2,opR1],dim=1))
         return mu_dist,value 
+
+    def forward_transfer(self, text):
+        m = len(text)
+        image = torch.zeros(size = (m, 3, 224, 224))
+        op = self.resnet(image)
+        opR1 = self.fcResNet1(op)
+        if torch.cuda.is_available():
+            text = {key: val.to('cuda:0') for key, val in text.items()}
+        opR2 = self.bert(**text)[0]
+        opR2 = self.bertfc(opR2)
+        if torch.cuda.is_available():
+            opR1 = opR1.to(torch.device("cuda:0")) 
+            opR2 = opR2.to(torch.device("cuda:0"))
+        op_t = self.actor(torch.cat([opR2,opR1]))
+        return self.transfer(op_t)
 
     def display(self):
         for param in self.fcResNet0:
