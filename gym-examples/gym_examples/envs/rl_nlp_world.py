@@ -28,7 +28,7 @@ class BOXTYPE(Enum):
 class RlNlpWorld(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 1000000}
 ############################################
-    def __init__(self,render_mode=None):
+    def __init__(self,render_mode=None, instr_type = 'policy'):
         self.mode=0
         if render_mode=='rgb_array':
             self.mode=1
@@ -41,6 +41,7 @@ class RlNlpWorld(gym.Env):
             "text": spaces.Text(min_length=1,max_length=100),"question":spaces.Text(min_length=1,max_length=100),
             "visual": spaces.Box(low=0, high=255, shape=(vga.WIDTH,vga.HEIGHT,3), dtype=np.uint8)
         })
+        self.instr_type = instr_type
 ############################################
     def _get_obs(self):
         return {"text": self._text,"question":self._question,"visual": self._visual}
@@ -56,7 +57,7 @@ class RlNlpWorld(gym.Env):
             self.no=np.random.randint(1,1000)
         else:
             self.no=set_no
-        self.nlp_obj = CreateInstructions(self.no, type = 'state')
+        self.nlp_obj = CreateInstructions(self.no, type = self.instr_type)
         self.mx_timeSteps,self.curr_time=int(sum(self.nlp_obj.split_no(self.no))*2*2.5),0 # 5 times is the buffer given to solve the problem
         ## Gen initial info ##
         self.carry=False

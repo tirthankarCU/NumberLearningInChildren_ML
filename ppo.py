@@ -165,7 +165,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
     parser.add_argument('--model',type = int, help = 'Type of the model.')
     parser.add_argument('--ease',type = int, help = 'Level of ease you want to train.')
-    parser.add_argument('--iter',type = int, default=1000, help = 'Control the number of episodes.')
+    parser.add_argument('--instr_type',type = int, default=0, help = '(0/1) ~ (policy/state)')
     parser.add_argument('--log',type = int,default = logging.WARN, help = 'import logging module and send logging.INFO or different options.')
     args=parser.parse_args()
     logging.basicConfig(level = args.log, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
@@ -174,14 +174,25 @@ if __name__=='__main__':
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     time_to_learn = 50
-    max_episodes = max(time_to_learn*len(train_set),args.iter)
+    max_episodes = time_to_learn*len(train_set)
     LOG.info(f'Number of Episodes Tr[{len(train_set)}]*{time_to_learn} = {max_episodes}')
     max_steps_per_episode_list=[25,50,100,5] # my_estimation
     max_steps_per_episode = max_steps_per_episode_list[args.ease]
     max_frames = max_episodes * max_steps_per_episode
     frame_idx = 0
     early_stopping = False
-    env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
+    '''
+    FOR NEW TYPE OF INSTRUCTION (START)
+    '''
+    instr_type = "policy" if args.instr_type == 0 else "state"
+    if instr_type == "state":
+        for suf in suffix:
+            for word in suf:
+                word += '_stateInstr' 
+    '''
+    FOR NEW TYPE OF INSTRUCTION (END)
+    '''
+    env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array", instr_type = instr_type)
     # max_advantage = 20
     # Neural Network Hyper params:
     lr               = 9e-6

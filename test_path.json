@@ -6,7 +6,6 @@
 		},
 		"train_set": [],
 		"test_set": [],
-		"train_result_action_reward": "results/naive/cnn/m_n.log",
 		"train_result_plot": "results/naive/cnn/test_reward_list_naive.json",
 		"output_path": "results/naive/cnn"
 	},
@@ -17,7 +16,6 @@
 		},
 		"train_set": [], 
 		"test_set": [], 
-		"train_result_action_reward": "results/naive/nlp/m_n_nlp.log",
 		"train_result_plot": "results/naive/nlp/test_reward_list_fnlp_naive.json",
 		"output_path": "results/naive/nlp"
 	},
@@ -28,7 +26,6 @@
 		},
 		"train_set": "results/easy/cnn/train_seteasy.json", 
 		"test_set": "results/easy/cnn/test_seteasy.json", 
-		"train_result_action_reward": "results/easy/cnn/m_n.log",
 		"train_result_plot": "results/easy/cnn/test_reward_list_easy.json",
 		"output_path": "results/easy/cnn"
 	},
@@ -39,8 +36,17 @@
 		},
 		"train_set": "results/easy/nlp/train_setfnlp_easy.json", 
 		"test_set": "results/easy/nlp/test_setfnlp_easy.json", 
-		"train_result_action_reward": "results/easy/nlp/m_n_nlp.log",
 		"train_result_plot": "results/easy/nlp/test_reward_list_fnlp_easy.json",
 		"output_path": "results/easy/nlp"
+	},
+	"model_fnlp_easy_stateInstr":{
+		"model": {
+			"type": 1,
+			"path": "results/easy/nlp_stateInstr/model_fnlp_easy_stateInstr.ml"
+		},
+		"train_set": "results/easy/nlp_stateInstr/train_setfnlp_easy.json", 
+		"test_set": "results/easy/nlp_stateInstr/test_setfnlp_easy.json", 
+		"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_fnlp_easy.json",
+		"output_path": "results/easy/nlp_stateInstr"
 	}
 }

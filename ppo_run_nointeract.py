@@ -45,7 +45,7 @@ def run_agent(number,opt):
         return action.cpu().numpy().item()
     dbg=False
     episodes=1
-    env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
+    env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array", instr_type = instr_type)
     actionArr, rewardArr = [],[]
     for _ in range(episodes):
         cumulative_reward,steps=0,0
@@ -74,7 +74,23 @@ def run_agent(number,opt):
     return {"cumulative_reward":cumulative_reward,"action": actionArr, "reward": rewardArr}
 
 if __name__=='__main__':
-    models_to_test = ["model_naive","model_fnlp_naive","model_easy","model_fnlp_easy"]
+    '''
+    List of models that are available to be tested
+    '''
+    models_to_test = ["model_easy","model_fnlp_easy"]
+    parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
+    parser.add_argument('--instr_type',type = int, default=0, help = '(0/1) ~ (policy/state)')
+    args=parser.parse_args()
+    '''
+    FOR NEW TYPE OF INSTRUCTION (START)
+    '''
+    instr_type = "policy" if args.instr_type == 0 else "state"
+    if instr_type == "state":
+        for model in models_to_test:
+            model += '_stateInstr'
+    '''
+    FOR NEW TYPE OF INSTRUCTION (END)
+    '''
     with open('test_path.json','r') as file:
         paths = json.load(file)
     for key,value in paths.items(): 
