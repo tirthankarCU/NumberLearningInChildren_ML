@@ -61,8 +61,7 @@ class NNModelNLP(nn.Module):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # DQN for transfer task
         self.transfer = nn.Sequential(
-                                        nn.Linear(self.noOfActions),
-                                        nn.Softmax(dim = 1)
+                                        nn.Linear(self.noOfActions, 3), # Transfer task has 3 output (greater, equal, lesser)                                        nn.Softmax(dim = 1)
                                      )
         
     def forward(self,image,text):
