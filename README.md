@@ -2,13 +2,13 @@
 
 ## How to run :-
 > First train the model using command line, an example will be 
-**python3 -W ignore ppo.py --model 1 --ease -1 --log 20 --instr_type 1 &> m1e1.txt &*
+**python3 -W ignore ppo.py --model 1 --ease -1 --log 20 --instr_type 1 --iter 500 &> m1e1.txt &*
 There are two models 0 & 1; 0 -> CNN  whereas 1 -> CNN_NLP
 There are four levels of dataset -1, 0, 1, 2; -1 is used for sanity check,
 0 is easy dataset, 1 is medium and 2 is hard. '--log' represents how much 
 detail you want while logging, default is **30(WARNING)** during training.
 **iter** dictates the max. number of episodes that's being run for a dataset,
-generally it's not used.
+generally it's not used, unless it's a naive model used for sanity check.
 
 > Each number in a particular dataset, let's say "easy" is given a particular number of episodes to learn it's called the time_to_learn ~ if episodeNo%time_to_learn == 0:...; The total number of episodes for a dataset is given by ~ max_episodes = max(time_to_learn*len(train_set),args.iter). ppo.py which is invoked during RL training saves the trained model with appropriate name, the variable part of the name is constructed using **suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]** This should match **test_path.json**, which is a pain to ensure. After the agent finishes training in the RL environment, ppo_run_nointeract.py is run. **ppo_run_nointeract.py saves (train_dict.json) and (test_dict.json) containing the results from train and test dataset in the output folder.**
 
