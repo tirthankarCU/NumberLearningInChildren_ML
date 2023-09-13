@@ -1,6 +1,6 @@
 spell={1:'first',2:'second',3:'third',4:'fourth',5:'fifth',
        6:'sixth',7:'seventh',8:'eighth',9:'ninth'}        
-box_name = {0: 'None', 1: 'hundreth', 2: 'tenth',
+box_name = {0: 'None', 1: 'hundred', 2: 'ten',
             3: 'unit'}
 
 
@@ -27,8 +27,8 @@ class CreateInstructions:
                       self.ten_state - state_def[0][1], \
                       self.uni_state - state_def[0][2]
             res_str = self.common_prefix + \
-                      f"There are {x} blocks in hundreth's palce, {y} blocks" + \
-                      f" in unit's palce and {z} blocks in one's place."
+                      f"There are {x} blocks in hundred\'s place, {y} blocks" + \
+                      f" in ten\'s place and {z} blocks in unit\'s place."
             if state_def[1] == True:
                 res_str += f" You are holding a {box_name[state_def[2]]} block."
         return res_str 
@@ -52,13 +52,13 @@ class CreateInstructions:
         word_name,hun,ten,uni = self.get_word_name(self.no)
         if hun:
             exp_actions = exp_actions + [0,3]*hun
-            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} hundredth block .' if _%2 ==0  else 'Put the hundredth block in the hundredth\'s palce .' for _ in range(2*hun)]
+            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} hundred block .' if _%2 ==0  else 'Put the hundred block in the hundred\'s place .' for _ in range(2*hun)]
         if ten:
             exp_actions = exp_actions + [1,4]*ten
-            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} tenth block .' if _%2 ==0  else 'Put the tenth block in the tenth\'s palce .' for _ in range(2*ten)]
+            instructions = instructions  + [f'Next , pick up the {spell[_//2+1]} ten block .' if _%2 ==0  else 'Put the ten block in the ten\'s place .' for _ in range(2*ten)]
         if uni:
             exp_actions = exp_actions + [2,5]*uni    
-            instructions = instructions  +  [f'Next , pick up the {spell[_//2+1]} unit block .' if _%2 ==0  else 'Put the unit block in the unit\'s palce .' for _ in range(2*uni)]       
+            instructions = instructions  +  [f'Next , pick up the {spell[_//2+1]} unit block .' if _%2 ==0  else 'Put the unit block in the unit\'s place .' for _ in range(2*uni)]       
         instructions[0] = f"This is {word_name}. Let's use our blocks to build the number. To build {word_name}"+instructions[0][len("Next"):]
         return instructions, exp_actions
 #################################################### 
