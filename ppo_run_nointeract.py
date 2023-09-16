@@ -79,7 +79,8 @@ if __name__=='__main__':
     '''
     models_to_test = ["model_easy","model_fnlp_easy"]
     parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
-    parser.add_argument('--instr_type',type = int, default=0, help = '(0/1) ~ (policy/state)')
+    parser.add_argument('--instr_type',type = int, default = 0, help = '(0/1) ~ (policy/state)')
+    parser.add_argument('--full_test', type = int, default = 0, help = '1 to test all numbers.')
     args=parser.parse_args()
     '''
     FOR NEW TYPE OF INSTRUCTION (START)
@@ -137,3 +138,16 @@ if __name__=='__main__':
         with open(f'{value["output_path"]}/test_dict.json','w') as file:
             json.dump(test_dict,file)
         LOG.info(f'Test Dict {value["output_path"]}/test_dict.json')
+
+        # FULL Test 
+        if args.full_test == 1:
+            full_test = {}
+            avg_cum = 0
+            for no in range(1, 1000):
+                full_test[no] = run_agent(no,value["model"]["type"])
+                avg_cum += full_test[no]["cumulative_reward"]
+                LOG.info(f'[TEST] No[{no}] ~ Reward[{full_test[no]["cumulative_reward"]}]')
+            LOG.info(f'[IMP] test {avg_cum/len(test_set)}')
+            with open(f'{value["output_path"]}/full_test_dict.json','w') as file:
+                json.dump(full_test,file)
+            LOG.info(f'Full Test Dict {value["output_path"]}/full_test_dict.json')  

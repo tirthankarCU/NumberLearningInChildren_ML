@@ -2,7 +2,7 @@
 
 ## How to run :-
 > First train the model using command line, an example will be 
-**python3 -W ignore ppo.py --model 1 --ease -1 --log 20 --instr_type 1 --iter 500 &> m1e1.txt &*
+**python3 -W ignore ppo.py --model 1 --ease -1 --log 20 --instr_type 1 --iter 500 &> m1e1.txt &**
 There are two models 0 & 1; 0 -> CNN  whereas 1 -> CNN_NLP
 There are four levels of dataset -1, 0, 1, 2; -1 is used for sanity check,
 0 is easy dataset, 1 is medium and 2 is hard. '--log' represents how much 
@@ -62,3 +62,21 @@ To create multiple training seeds, I ran the code one by one and saved the resul
 
 **3. ENV_UTIL - Contains docker related files, seed information file, additional helper files.**
 
+## Current Run Instructions :-
+
+RUN ~ **python3 -W ignore ppo.py --model 1 --ease 0 --instr_type 1 &> m1e1i1.txt &**
+Add to **test_path.json**.
+	"model_fnlp_easy_stateInstr":{
+		"model": {
+			"type": 1,
+			"path": "results/easy/nlp_stateInstr/model_fnlp_easy_stateInstr.ml"
+		},
+		"train_set": "results/easy/nlp_stateInstr/train_setfnlp_easy.json", 
+		"test_set": "results/easy/nlp_stateInstr/test_setfnlp_easy.json", 
+		"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_fnlp_easy.json",
+		"output_path": "results/easy/nlp_stateInstr"
+	}
+Inside results create **nlp_stateInstr**.
+From directory NLP_RL_Docker_Version ~ **gsutil cp results/  gs://ppo-run/seed0/easy/**.
+
+**python3 -W ignore ppo_run_nointeract.py --instr_type 1 --full_test**

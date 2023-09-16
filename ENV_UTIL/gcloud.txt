@@ -6,7 +6,7 @@ gsutil cp [SOURCE] gs://[BUCKET_NAME]/
 
 copy everything from the bucket using "gsutil cp -r gs://ppo-run ."
 make modications locally like adding seed folder then cp it back using
-copy/mv command "ggsutil cp -r ppo-run/seed0 gs://ppo-run"
+copy command "gsutil cp -r ppo-run/seed0 gs://ppo-run"
 
 There is also a remove command ~ gsutil rm -rf gs://ppo-run/results
 
