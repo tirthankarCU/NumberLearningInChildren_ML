@@ -18,7 +18,7 @@ generally it's not used, unless it's a naive model used for sanity check.
 To create multiple training seeds, I ran the code one by one and saved the results in appropriate seed folder.  
 
 > **Running ppo_run_nointeract.py** - Before running the command below it's important to move all the elements in the local results folder ( after one RL run ) to the path described in the test_path.json file. Currently this is done manually. 
-**python3 -W ignore ppo_run_nointeract.py --instr_type 0 --full_test 1 --model 1**
+**python3 -W ignore ppo_run_nointeract.py --instr_type 0 --full_test 1 --model 1 --ease 0**
 > All available valid models are run in this case. 'models_to_test' is the list of current models that can be run, if the instr_type is 1 then only the valid models which were trained using state instructions will be run. The CNN only model is present in console_output_instr0.txt
 
 > In conclusion although ppo.py ( which is run during the training of RL model ) has to be run for individual models, ease level and instruction type. ppo_run_nointeract.py is run separately for different instruction type. 
@@ -81,4 +81,4 @@ Add to **test_path.json**.
 Inside results create **nlp_stateInstr**.
 From directory NLP_RL_Docker_Version ~ **gsutil cp -r results/*  gs://ppo-run/seed0/easy/**.
 
-**python3 -W ignore ppo_run_nointeract.py --instr_type 0 --full_test 1 --model 1**
+**python3 -W ignore ppo_run_nointeract.py --instr_type 0 --full_test 1 --model 1 --ease 0 &**
