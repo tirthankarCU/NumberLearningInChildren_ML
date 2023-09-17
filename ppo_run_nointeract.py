@@ -77,10 +77,14 @@ if __name__=='__main__':
     '''
     List of models that are available to be tested
     '''
-    models_to_test = ["model_easy","model_fnlp_easy"]
+    models_to_test = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
+    for model_to_test in models_to_test:
+        for id, val in enumerate(model_to_test):
+            model_to_test[id] = val 
     parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
     parser.add_argument('--instr_type',type = int, default = 0, help = '(0/1) ~ (policy/state)')
     parser.add_argument('--full_test', type = int, default = 0, help = '1 to test all numbers.')
+    parser.add_argument('--model',type = int, help = 'Type of the model.')
     args=parser.parse_args()
     '''
     FOR NEW TYPE OF INSTRUCTION (START)
@@ -95,7 +99,7 @@ if __name__=='__main__':
     with open('test_path.json','r') as file:
         paths = json.load(file)
     for key,value in paths.items(): 
-        if key not in models_to_test: continue
+        if key != models_to_test[args.model]: continue
         LOG.info(f'TEST NAME {key}')
         '''
             PLOT Tr Graph.
@@ -146,7 +150,7 @@ if __name__=='__main__':
             for no in range(1, 1000):
                 full_test[no] = run_agent(no,value["model"]["type"])
                 avg_cum += full_test[no]["cumulative_reward"]
-                LOG.info(f'[TEST] No[{no}] ~ Reward[{full_test[no]["cumulative_reward"]}]')
+                LOG.info(f'[FULL TEST] No[{no}] ~ Reward[{full_test[no]["cumulative_reward"]}]')
             LOG.info(f'[IMP] test {avg_cum/len(test_set)}')
             with open(f'{value["output_path"]}/full_test_dict.json','w') as file:
                 json.dump(full_test,file)
