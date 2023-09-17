@@ -80,7 +80,7 @@ if __name__=='__main__':
     models_to_test = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
     for model_to_test in models_to_test:
         for id, val in enumerate(model_to_test):
-            model_to_test[id] = val 
+            model_to_test[id] = 'model_' + val 
     parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
     parser.add_argument('--instr_type',type = int, default = 0, help = '(0/1) ~ (policy/state)')
     parser.add_argument('--full_test', type = int, default = 0, help = '1 to test all numbers.')
