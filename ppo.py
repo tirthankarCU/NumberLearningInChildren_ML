@@ -188,8 +188,8 @@ if __name__=='__main__':
     instr_type = "policy" if args.instr_type == 0 else "state"
     if instr_type == "state":
         for suf in suffix:
-            for word in suf:
-                word += '_stateInstr' 
+            for id, word in enumerate(suf):
+                suf[id] = word + '_stateInstr' 
     '''
     FOR NEW TYPE OF INSTRUCTION (END)
     '''
