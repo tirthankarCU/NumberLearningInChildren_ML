@@ -99,7 +99,7 @@ if __name__=='__main__':
     with open('test_path.json','r') as file:
         paths = json.load(file)
     for key,value in paths.items(): 
-        if key != models_to_test[args.model]: continue
+        if key not in models_to_test[args.model]: continue
         LOG.info(f'TEST NAME {key}')
         '''
             PLOT Tr Graph.
