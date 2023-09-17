@@ -1,6 +1,8 @@
 # Only the PPO code works in this branch.
 
 ## How to run :-
+> Currently docker build is not working from inside the VMs. It's better to pull the docker image I have created. **sudo docker pull tirthankar95/rl-nlp:latest**
+
 > First train the model using command line, an example will be 
 **python3 -W ignore ppo.py --model 1 --ease -1 --log 20 --instr_type 1 --iter 500 &> m1e1.txt &**
 There are two models 0 & 1; 0 -> CNN  whereas 1 -> CNN_NLP
@@ -77,6 +79,6 @@ Add to **test_path.json**.
 		"output_path": "results/easy/nlp_stateInstr"
 	}
 Inside results create **nlp_stateInstr**.
-From directory NLP_RL_Docker_Version ~ **gsutil cp results/  gs://ppo-run/seed0/easy/**.
+From directory NLP_RL_Docker_Version ~ **gsutil cp -r results/*  gs://ppo-run/seed0/easy/**.
 
 **python3 -W ignore ppo_run_nointeract.py --instr_type 1 --full_test**

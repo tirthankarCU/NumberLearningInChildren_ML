@@ -87,8 +87,8 @@ if __name__=='__main__':
     '''
     instr_type = "policy" if args.instr_type == 0 else "state"
     if instr_type == "state":
-        for model in models_to_test:
-            model += '_stateInstr'
+        for id, model in enumerate(models_to_test):
+            models_to_test[id] = model + '_stateInstr'
     '''
     FOR NEW TYPE OF INSTRUCTION (END)
     '''
