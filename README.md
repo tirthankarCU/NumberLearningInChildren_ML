@@ -64,6 +64,16 @@ To create multiple training seeds, I ran the code one by one and saved the resul
 
 **3. ENV_UTIL - Contains docker related files, seed information file, additional helper files.**
 
+## Time frame for RL task. 
+
+From env side episode terminates after 2.5 times the time required to solve the challenge optimally
+agent side makes and estimate how long it takes for each task to be solved max_steps_per_episode_list=[25,50,100,5] # my_estimation
+Each number is flashed 50 times before being changed.
+
+The following two lines are used to make an estimation 
+    max_steps_per_episode = max_steps_per_episode_list[args.ease]
+    max_frames = max_episodes * max_steps_per_episode
+
 ## Current Run Instructions :-
 
 RUN ~ **python3 -W ignore ppo.py --model 1 --ease 0 --instr_type 1 &> m1e1i1.txt &**
@@ -81,4 +91,6 @@ Add to **test_path.json**.
 Inside results create **nlp_stateInstr**.
 From directory NLP_RL_Docker_Version ~ **gsutil cp -r results/*  gs://ppo-run/seed0/easy/**.
 
-**python3 -W ignore ppo_run_nointeract.py --instr_type 0 --full_test 1 --model 1 --ease 0 &**
+**python3 -W ignore ppo_run_nointeract.py --instr_type 1 --full_test 1 --model 1 --ease 0 &**
+
+When running **python3 -W ignore ppo_run_nointeract.py --instr_type 0 --full_test 1 --model 1 --ease 0 &** self.mxSentenceLength = 50 has to be changed manually in model_nlp.py

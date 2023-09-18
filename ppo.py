@@ -164,7 +164,8 @@ if __name__=='__main__':
     suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
     parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
     parser.add_argument('--model',type = int, help = 'Type of the model.')
-    parser.add_argument('--ease',type = int, help = 'Level of ease you want to train.')
+    # 3 is free flow data 1,2,3...
+    parser.add_argument('--ease',type = int, help = '(-1,0,1,2,3) Level of ease you want to train.')
     parser.add_argument('--iter',type = int, default=1000, help = 'Control the number of episodes.')
     parser.add_argument('--instr_type',type = int, default=0, help = '(0/1) ~ (policy/state)')
     parser.add_argument('--log',type = int,default = logging.WARN, help = 'import logging module and send logging.INFO or different options.')
@@ -196,7 +197,7 @@ if __name__=='__main__':
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array", instr_type = instr_type)
     # max_advantage = 20
     # Neural Network Hyper params:
-    lr               = 9e-6
+    lr               = 1e-4
     mini_batch_size  = 1
     ppo_epochs       = 1
     if args.model == 0: # Naive model
