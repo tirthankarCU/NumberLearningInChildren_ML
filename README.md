@@ -94,3 +94,14 @@ From directory NLP_RL_Docker_Version ~ **gsutil cp -r results/*  gs://ppo-run/se
 **python3 -W ignore ppo_run_nointeract.py --instr_type 1 --full_test 1 --model 1 --ease 0 &**
 
 When running **python3 -W ignore ppo_run_nointeract.py --instr_type 0 --full_test 1 --model 1 --ease 0 &** self.mxSentenceLength = 50 has to be changed manually in model_nlp.py
+
+#### New test.
+python3 -W ignore ppo.py --model 1 --ease 0 --instr_type 0 &> m1e1.txt &
+with learning rate of 1e-4 & mxSentenceLength = 50
+
+Previous learning rate didn't work. Try out.
+lr = 8e-6
+
+To Do: -
+Reward based on progress
+Create new dataset with natural flow.
