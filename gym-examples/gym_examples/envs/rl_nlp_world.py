@@ -74,6 +74,17 @@ class RlNlpWorld(gym.Env):
         return self._get_obs()
 ############################################
     def step(self, action):
+        if self.instr_type == 'policy': 
+            return self.step_policy(action)
+        elif self.instr_type == 'state': 
+            return self.step_state(action)
+        assert False, 'BAD INSTRUCTION TYPE'
+
+    def step_state(self, action):
+        pass 
+
+    def step_policy(self, action):
+        terminated=False
         if action<0 or action>=6:
             reward = -1000
             terminated = True 
@@ -86,14 +97,10 @@ class RlNlpWorld(gym.Env):
                         self.carry=True 
                         self.boxType=b_type
                         box.isEmpty=True
-                        return -1
-                return -2 # If agent tries to pick a box but there are no boxes box.isEmpty == True
-            else:
-                return -2
+                        return
             
         def put(b_type):
-            if self.carry==False or self.boxType!=b_type:
-                return -2
+            if self.carry==False or self.boxType!=b_type: return
             self.boxType=BOXTYPE.NONE 
             self.carry=False 
             # constructArrElement is where the blocks are put. 
@@ -101,7 +108,7 @@ class RlNlpWorld(gym.Env):
             for box in vga.constructArrElement[b_type.value-1]:
                 if box.isEmpty:
                     box.isEmpty=False 
-                    return -1
+                    return
                 
         def checkSolution():
             result,power=0,100
@@ -116,40 +123,41 @@ class RlNlpWorld(gym.Env):
         
         reward=0
         if action==ACTION.PICK_BIG.value:
-            reward=pick(vga.big_block,BOXTYPE.BIG)
+            pick(vga.big_block,BOXTYPE.BIG)
         elif action==ACTION.PICK_MED.value:
-            reward=pick(vga.medium_block,BOXTYPE.MEDIUM)
+            pick(vga.medium_block,BOXTYPE.MEDIUM)
         elif action==ACTION.PICK_SMALL.value:
-            reward=pick(vga.small_block,BOXTYPE.SMALL)
+            pick(vga.small_block,BOXTYPE.SMALL)
         elif action==ACTION.PUT_BIG.value:
-            reward=put(BOXTYPE.BIG)
+            put(BOXTYPE.BIG)
         elif action==ACTION.PUT_MED.value:
-            reward=put(BOXTYPE.MEDIUM)
+            put(BOXTYPE.MEDIUM)
         elif action==ACTION.PUT_SMALL.value:
-            reward=put(BOXTYPE.SMALL)
+            put(BOXTYPE.SMALL)
 
         '''Extra reward for following instructions'''
         vga.carry_indicator=self.carry
         self._visual=vga.drawAgain()
+        solution=checkSolution() # return True is solution is correct 
+        self.curr_time += 1
         if action == self.nlp_obj.get_next_actions():
             self.nlp_obj.incr()
             reward = 1
+        else: 
+            # If one instruction is not followed the task fails.
+            terminated = True 
         self._text = self.nlp_obj.get_next_instructions(state_def = \
                                                         (self.blocksLeft, 
                                                          self.carry, 
                                                          self.boxType.value))
-        self.curr_time += 1
-        solution=checkSolution() # return True is solution is correct
-        terminated=False 
         if self.curr_time>self.mx_timeSteps or solution==True:
-            terminated=True
+            terminated = True 
         if terminated:
-            sign=1 if checkSolution() else -1
+            reward = 10 if solution else -10
             self.close()
-        reward = sign*10 if terminated else reward
         observation = self._get_obs()
         info = self._get_info()
-        return observation, reward, terminated, info
+        return observation, reward/10, terminated, info
 ############################################
     @property
     def threshold_reward(self):
