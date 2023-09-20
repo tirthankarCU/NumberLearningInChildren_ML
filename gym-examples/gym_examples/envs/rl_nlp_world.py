@@ -5,6 +5,7 @@ import numpy as np
 from enum import Enum 
 import vision_pyGame as vga
 from create_nlp_instructions import *
+import math
 '''
 ACTIONS
 '''
@@ -58,7 +59,7 @@ class RlNlpWorld(gym.Env):
         else:
             self.no=set_no
         self.nlp_obj = CreateInstructions(self.no, type = self.instr_type)
-        self.mx_timeSteps,self.curr_time=int(sum(self.nlp_obj.split_no(self.no))*2*2.5),0 # 5 times is the buffer given to solve the problem
+        self.mx_timeSteps,self.curr_time=math.ceil(sum(self.nlp_obj.split_no(self.no))*2*2.5),0 # 2.5 times is the buffer given to solve the problem
         ## Gen initial info ##
         self.carry=False
         self.blocksLeft=[ (self.no//10**i)%10 for i in range(3) ]
@@ -69,6 +70,7 @@ class RlNlpWorld(gym.Env):
                                                         (self.blocksLeft, 
                                                          self.carry, 
                                                          self.boxType.value))
+        self.progess = 0
         return self._get_obs()
 ############################################
     def step(self, action):

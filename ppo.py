@@ -149,7 +149,7 @@ def gen_data(opt):
             valid.append(i)
     def compare(i1,i2):
         return sum_digits(i1) - sum_digits(i2)
-    m=int(len(valid)*0.8)
+    m=int(len(valid)*0.1)
     np.random.shuffle(valid)
     train, test = valid[:m],valid[m:]
     train = sorted(train,key=cmp_to_key(compare))
@@ -197,7 +197,7 @@ if __name__=='__main__':
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array", instr_type = instr_type)
     # max_advantage = 20
     # Neural Network Hyper params:
-    lr               = 8e-6
+    lr               = 5e-5
     mini_batch_size  = 1
     ppo_epochs       = 1
     if args.model == 0: # Naive model
