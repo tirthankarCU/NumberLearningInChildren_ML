@@ -4,7 +4,8 @@
 > Currently docker build is not working from inside the VMs. It's better to pull the docker image I have created. **sudo docker pull tirthankar95/rl-nlp:latest**
 
 > First train the model using command line, an example will be 
-**python3 -W ignore ppo.py --model 1 --ease -1 --log 20 --instr_type 1 --iter 500 &> m1e1.txt &**
+**python3 -W ignore ppo.py &> m1e1.txt &**
+When running ppo.py and ppo_run_nointeract.py the configs are read from the json files.
 There are two models 0 & 1; 0 -> CNN  whereas 1 -> CNN_NLP
 There are four levels of dataset -1, 0, 1, 2; -1 is used for sanity check,
 0 is easy dataset, 1 is medium and 2 is hard. '--log' represents how much 
@@ -18,7 +19,7 @@ generally it's not used, unless it's a naive model used for sanity check.
 To create multiple training seeds, I ran the code one by one and saved the results in appropriate seed folder.  
 
 > **Running ppo_run_nointeract.py** - Before running the command below it's important to move all the elements in the local results folder ( after one RL run ) to the path described in the test_path.json file. Currently this is done manually. 
-**python3 -W ignore ppo_run_nointeract.py --instr_type 0 --full_test 1 --model 1 --ease 0**
+**python3 -W ignore ppo_run_nointeract.py &**
 > All available valid models are run in this case. 'models_to_test' is the list of current models that can be run, if the instr_type is 1 then only the valid models which were trained using state instructions will be run. The CNN only model is present in console_output_instr0.txt
 
 > In conclusion although ppo.py ( which is run during the training of RL model ) has to be run for individual models, ease level and instruction type. ppo_run_nointeract.py is run separately for different instruction type. 
@@ -75,7 +76,7 @@ The following two lines are used to make an estimation
     max_frames = max_episodes * max_steps_per_episode
 
 ## Current Run Instructions :-
-
+[Legacy console command is used to denote what config is run]
 RUN ~ **python3 -W ignore ppo.py --model 1 --ease 0 --instr_type 1 &> m1e1i1.txt &**
 Add to **test_path.json**.
 	"model_fnlp_easy_stateInstr":{

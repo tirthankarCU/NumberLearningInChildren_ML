@@ -1,6 +1,5 @@
 import json 
 import logging 
-import argparse
 import sys 
 import os
 sys.path.append(f'{os.getcwd()}/gym-examples')
@@ -81,16 +80,12 @@ if __name__=='__main__':
     for model_to_test in models_to_test:
         for id, val in enumerate(model_to_test):
             model_to_test[id] = 'model_' + val 
-    parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
-    parser.add_argument('--instr_type',type = int, default = 0, help = '(0/1) ~ (policy/state)')
-    parser.add_argument('--full_test', type = int, default = 0, help = '1 to test all numbers.')
-    parser.add_argument('--model',type = int, help = 'Type of the model.')
-    parser.add_argument('--ease',type = int, help = 'Level of ease you want to train.') # -1, 0, 1, 2
-    args=parser.parse_args()
+    with open('train_config.json', 'r') as file:
+        args = json.load(file)
     '''
     FOR NEW TYPE OF INSTRUCTION (START)
     '''
-    instr_type = "policy" if args.instr_type == 0 else "state"
+    instr_type = "policy" if args["instr_type"] == 0 else "state"
     if instr_type == "state":
         for id, model in enumerate(models_to_test):
             models_to_test[id] = model + '_stateInstr'
@@ -100,7 +95,7 @@ if __name__=='__main__':
     with open('test_path.json','r') as file:
         paths = json.load(file)
     for key,value in paths.items(): 
-        if key != models_to_test[args.model][args.ease]: continue
+        if key != models_to_test[args["model"]][args["ease"]]: continue
         LOG.info(f'TEST NAME {key}')
         '''
             PLOT Tr Graph.
@@ -147,7 +142,7 @@ if __name__=='__main__':
         LOG.info(f'Test Dict {value["output_path"]}/test_dict.json')
 
         # FULL Test 
-        if args.full_test == 1:
+        if args["full_test"] == 1:
             full_test = {}
             avg_cum = 0
             for no in range(1, 1000):

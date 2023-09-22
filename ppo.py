@@ -1,4 +1,3 @@
-import argparse
 import sys 
 import os
 sys.path.append(f'{os.getcwd()}/gym-examples')
@@ -38,9 +37,9 @@ curr_number = -1
 def RESETS(envs, override=True):
     global train_set_counter, train_set, args, curr_number
     if not override:
-        temp = train_set[-1] if args.ease>=0 else 1
+        temp = train_set[-1] if args["ease"]>=0 else 1
         envs.reset(set_no = temp)
-    set_number=train_set[train_set_counter] if args.ease>=0 else 1
+    set_number=train_set[train_set_counter] if args["ease"]>=0 else 1
     if episodeNo%time_to_learn == 0: #increment only if time to learn has passed.
         if train_set_counter>=len(train_set)-1:
             train_set_counter=0
@@ -57,7 +56,7 @@ def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, ad
     batch_size = states.size(0)
     for _ in range(math.ceil(batch_size / mini_batch_size)):
         rand_ids = np.random.randint(0, batch_size, mini_batch_size)
-        if args.model == 0:
+        if args["model"] == 0:
             yield states[rand_ids, :], states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
         else:
             temp_dict = {}
@@ -75,9 +74,9 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
     global frame_idx
     for _ in range(ppo_epochs):
         for state, stateNlp, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantages):
-            if args.model == 0:
+            if args["model"] == 0:
                 dist, value = model(state)
-            elif args.model == 1:
+            elif args["model"] == 1:
                 dist, value = model(state,stateNlp)
             entropy = dist.entropy().mean()
             new_log_probs = dist.log_prob(action)
@@ -111,18 +110,18 @@ def test_env(model):
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
     state = RESETS(env, override=False)
     state["visual"] = U.pre_process(state)
-    if args.model == 1:
+    if args["model"] == 1:
         state["text"] = U.pre_process_text(model,state)
     cum_reward=0
     for _ in range(max_steps_per_episode):
-        if args.model == 0:
+        if args["model"] == 0:
             dist, value = model(state["visual"])
-        elif args.model == 1:
+        elif args["model"] == 1:
             dist, value = model(state['visual'],state['text'])   
         action = dist.sample()
         next_state, reward, done, info = STEPS(env,action.item())
         next_state["visual"] = U.pre_process(next_state)
-        if args.model == 1:
+        if args["model"] == 1:
             next_state["text"] = U.pre_process_text(model,next_state)
         state=copy.deepcopy(next_state)
         cum_reward += reward 
@@ -154,39 +153,34 @@ def gen_data(opt):
     train, test = valid[:m],valid[m:]
     train = sorted(train,key=cmp_to_key(compare))
     test = sorted(test,key=cmp_to_key(compare))
-    with open(f'results/train_set{suffix[args.model][args.ease]}.json', 'w') as file:
+    with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)
-    with open(f'results/test_set{suffix[args.model][args.ease]}.json', 'w') as file:
+    with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(test, file)
     return train, test
                 
 if __name__=='__main__':
     suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
-    parser = argparse.ArgumentParser(description = 'NLP_RL parameters.')
-    parser.add_argument('--model',type = int, help = 'Type of the model.')
-    # 3 is free flow data 1,2,3...
-    parser.add_argument('--ease',type = int, help = '(-1,0,1,2,3) Level of ease you want to train.')
-    parser.add_argument('--iter',type = int, default=1000, help = 'Control the number of episodes.')
-    parser.add_argument('--instr_type',type = int, default=0, help = '(0/1) ~ (policy/state)')
-    parser.add_argument('--log',type = int,default = logging.WARN, help = 'import logging module and send logging.INFO or different options.')
-    args=parser.parse_args()
-    logging.basicConfig(level = args.log, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
+    with open('train_config.json', 'r') as file:
+        args = json.load(file)
+    print(args)
+    logging.basicConfig(level = args["log"], format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
     LOG = logging.getLogger(__name__)
-    train_set,test_set=gen_data(args.ease)
+    train_set,test_set=gen_data(args["ease"])
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     time_to_learn = 100
-    max_episodes = max(time_to_learn*len(train_set),args.iter)
+    max_episodes = max(time_to_learn*len(train_set),args["iter"])
     LOG.info(f'Number of Episodes Tr[{len(train_set)}]*{time_to_learn} = {max_episodes}')
     max_steps_per_episode_list=[25,50,100,5] # my_estimation
-    max_steps_per_episode = max_steps_per_episode_list[args.ease]
+    max_steps_per_episode = max_steps_per_episode_list[args["ease"]]
     max_frames = max_episodes * max_steps_per_episode
     frame_idx = 0
     early_stopping = False
     '''
     FOR NEW TYPE OF INSTRUCTION (START)
     '''
-    instr_type = "policy" if args.instr_type == 0 else "state"
+    instr_type = "policy" if args["instr_type"] == 0 else "state"
     if instr_type == "state":
         for suf in suffix:
             for id, word in enumerate(suf):
@@ -200,10 +194,10 @@ if __name__=='__main__':
     lr               = 1e-5
     mini_batch_size  = 1
     ppo_epochs       = 1
-    if args.model == 0: # Naive model
+    if args["model"] == 0: # Naive model
         model = M.NNModel().to(device) 
     # threshold_reward = envs[0].threshold_reward
-    elif args.model == 1: # NLP CNN model
+    elif args["model"] == 1: # NLP CNN model
         model = MNLP.NNModelNLP().to(device)
     threshold_reward = env.threshold_reward
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -227,14 +221,14 @@ if __name__=='__main__':
         entropy = 0
         state = RESETS(env)
         state["visual"] = U.pre_process(state)
-        if args.model == 1:
+        if args["model"] == 1:
             state["text"] = U.pre_process_text(model,state)
         episodeNo += 1
         extra_padding = 25
         for _iter in range(max_steps_per_episode+extra_padding):
-            if args.model == 0:
+            if args["model"] == 0:
                 dist, value = model(state["visual"])
-            elif args.model == 1:
+            elif args["model"] == 1:
                 dist, value = model(state['visual'],state['text'])
             action = dist.sample()
             if action.item() not in action_dict:
@@ -247,7 +241,7 @@ if __name__=='__main__':
             LOG.debug(f'Current action[{action.item()}] reward[{reward}]')
             
             next_state["visual"] = U.pre_process(next_state)
-            if args.model == 1:
+            if args["model"] == 1:
                 next_state["text"] = U.pre_process_text(model,next_state)
             log_prob = dist.log_prob(action)
             entropy += dist.entropy().mean()
@@ -257,9 +251,9 @@ if __name__=='__main__':
             masksArr.append(torch.FloatTensor([1 - done]).unsqueeze(1).to(device))
             actionsArr.append(torch.FloatTensor([action]).unsqueeze(1).to(device))
             
-            if args.model == 0:
+            if args["model"] == 0:
                 statesArr.append(state["visual"])
-            elif args.model == 1:
+            elif args["model"] == 1:
                 statesArr.append(state["visual"])
                 statesNlpArr.append(state["text"])
                 
@@ -268,17 +262,17 @@ if __name__=='__main__':
                 test_reward = np.mean([test_env(model) for _ in range(5)])
                 test_rewards.append([frame_idx,test_reward])
                 LOG.warning(f'Discovery {action_dict}, {reward_dict}')
-                with open(f'results/test_reward_list_{suffix[args.model][args.ease]}.json', 'w') as file:
+                with open(f'results/test_reward_list_{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
                     json.dump(test_rewards, file)
                 if test_reward > threshold_reward: early_stop = True
             if frame_idx % 5000 == 0:
                 LOG.info(f'Saving Model ...')
-                torch.save(model.state_dict(),f'results/model_{suffix[args.model][args.ease]}.ml')
+                torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
             frame_idx += 1
             if done: break
-        if args.model ==0:
+        if args["model"] ==0:
             _, next_value = model(next_state["visual"])
-        elif args.model == 1:
+        elif args["model"] == 1:
             _, next_value = model(next_state["visual"],next_state['text'])
         returns = compute_gae(next_value, rewardsArr, masksArr, valuesArr)
 
@@ -290,5 +284,5 @@ if __name__=='__main__':
         advantage = returns - valuesArr
         # assert advantage.all() < max_advantage, f'{returns} {valuesArr}'
         ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
-    torch.save(model.state_dict(),f'results/model_{suffix[args.model][args.ease]}.ml')
+    torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
     
