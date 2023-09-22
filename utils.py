@@ -117,8 +117,12 @@ def gen_data_random(opt, args):
 def gen_data_natural(args):
     total_set = [i for i in range(1, 1000)]
     # Controls how much data is there in test set.
-    m=int(len(total_set)*0.1) 
-    train, test = total_set[:m],total_set[m:]
+    m=5
+    train, test = None, None
+    train = total_set[:m] + total_set[9:9+m] + total_set[99:99+m] + \
+            total_set[199:199+m] + [total_set[299]] 
+    test = total_set[m:2*m] + total_set[9+m:9+2*m] + total_set[99+m:99+2*m] + \
+           total_set[199+m:199+2*m] + total_set[300:]
     with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)
     with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:

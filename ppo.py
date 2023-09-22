@@ -14,6 +14,7 @@ import torch.optim as optim
 import json
 import copy
 import gym 
+import gym_examples
 import math
 import time
 import numpy as np 
@@ -135,9 +136,9 @@ if __name__=='__main__':
     suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
     with open('train_config.json', 'r') as file:
         args = json.load(file)
-    print(args)
     logging.basicConfig(level = args["log"], format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
     LOG = logging.getLogger(__name__)
+    LOG.warning(f'Params: {args}')
     train_set,test_set=gen_data(args)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

@@ -9,6 +9,7 @@ import model_nlp as MNLP
 import torch 
 import matplotlib.pyplot as plt 
 import gym 
+import gym_examples
 import copy
 
 logging.basicConfig(filename='console_output.txt', filemode='w', level = logging.INFO, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
