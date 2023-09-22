@@ -6,7 +6,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 import cv2
 import json 
-import os
+from functools import cmp_to_key
+suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
 
 def plot(data,ylb,title):
     plt.plot([i for i in range(1,)],data,color='mediumvioletred',marker='o')
@@ -81,3 +82,45 @@ def pre_process_text(model,state):
     TEXT = state["text"]+" [PAD]"*model.mxSentenceLength 
     text = model.tokenizer(TEXT,padding=True,truncation=True,max_length=model.mxSentenceLength,return_tensors="pt")
     return text 
+
+def gen_data_random(opt, args):
+    if opt<0: return [], []
+    global suffix
+    def sum_digits(no)->int:
+        res=0
+        while no!=0:
+            m=no%10
+            res+=m 
+            no=no//10
+        return res 
+    valid=[]
+    for i in range(1,1000):
+        if opt==0 and sum_digits(i)<=9:
+            valid.append(i)
+        elif opt==1 and sum_digits(i)<=15:
+            valid.append(i)
+        elif opt==2:
+            valid.append(i)
+    def compare(i1,i2):
+        return sum_digits(i1) - sum_digits(i2)
+    m=int(len(valid)*0.1)
+    np.random.shuffle(valid)
+    train, test = valid[:m],valid[m:]
+    train = sorted(train,key=cmp_to_key(compare))
+    test = sorted(test,key=cmp_to_key(compare))
+    with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+        json.dump(train, file)
+    with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+        json.dump(test, file)
+    return train, test
+
+def gen_data_natural(args):
+    total_set = [i for i in range(1, 1000)]
+    # Controls how much data is there in test set.
+    m=int(len(total_set)*0.1) 
+    train, test = total_set[:m],total_set[m:]
+    with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+        json.dump(train, file)
+    with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+        json.dump(test, file)
+    return train, test

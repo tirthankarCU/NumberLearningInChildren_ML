@@ -3,7 +3,6 @@ import os
 sys.path.append(f'{os.getcwd()}/gym-examples')
 import numpy as np 
 np.random.seed(seed = 2023)
-import pandas as pd 
 import time
 import utils as U
 import model as M
@@ -12,15 +11,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import matplotlib.pyplot as plt 
 import json
 import copy
 import gym 
-import gym_examples
 import math
 import time
 import numpy as np 
-from functools import cmp_to_key
 import logging 
 '''
     model_0: Naive CNN
@@ -128,36 +124,12 @@ def test_env(model):
         if done: break
     return cum_reward
 
-def gen_data(opt): 
-    if opt<0: return [], []
-    global suffix
-    def sum_digits(no)->int:
-        res=0
-        while no!=0:
-            m=no%10
-            res+=m 
-            no=no//10
-        return res 
-    valid=[]
-    for i in range(1,1000):
-        if opt==0 and sum_digits(i)<=9:
-            valid.append(i)
-        elif opt==1 and sum_digits(i)<=15:
-            valid.append(i)
-        elif opt==2:
-            valid.append(i)
-    def compare(i1,i2):
-        return sum_digits(i1) - sum_digits(i2)
-    m=int(len(valid)*0.1)
-    np.random.shuffle(valid)
-    train, test = valid[:m],valid[m:]
-    train = sorted(train,key=cmp_to_key(compare))
-    test = sorted(test,key=cmp_to_key(compare))
-    with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
-        json.dump(train, file)
-    with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
-        json.dump(test, file)
-    return train, test
+def gen_data(args): 
+    if args["order"] == 0: # RANDOM ORDER but sorted in ease of difficulty.
+        return U.gen_data_random(args["ease"], args)
+    if args["order"] ==1:
+        return U.gen_data_natural(args)
+    return None, None
                 
 if __name__=='__main__':
     suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
@@ -166,7 +138,7 @@ if __name__=='__main__':
     print(args)
     logging.basicConfig(level = args["log"], format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
     LOG = logging.getLogger(__name__)
-    train_set,test_set=gen_data(args["ease"])
+    train_set,test_set=gen_data(args)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     time_to_learn = 100

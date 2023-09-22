@@ -3,19 +3,12 @@ import logging
 import sys 
 import os
 sys.path.append(f'{os.getcwd()}/gym-examples')
-import numpy as np 
-import pandas as pd 
-import time
 import utils as U
 import model as M
 import model_nlp as MNLP
 import torch 
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 import matplotlib.pyplot as plt 
 import gym 
-import gym_examples
 import copy
 
 logging.basicConfig(filename='console_output.txt', filemode='w', level = logging.INFO, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
