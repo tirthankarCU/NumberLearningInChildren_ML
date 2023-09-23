@@ -117,6 +117,7 @@ def gen_data_level_based(opt, args):
         np.random.shuffle(valid)
         train, test = valid[:m],valid[m:]
     if args["order"] == 2:
+        train, test = valid[:m],valid[m:]
         train = sorted(train,key=cmp_to_key(compare))
         test = sorted(test,key=cmp_to_key(compare))
     with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
