@@ -83,7 +83,14 @@ def pre_process_text(model,state):
     text = model.tokenizer(TEXT,padding=True,truncation=True,max_length=model.mxSentenceLength,return_tensors="pt")
     return text 
 
-def gen_data_random(opt, args):
+def gen_data(args): 
+    if args["order"] < 3: # RANDOM ORDER but sorted in ease of difficulty.
+        return gen_data_level_based(args["ease"], args)
+    if args["order"] == 3:
+        return gen_data_natural(args)
+    return None, None
+
+def gen_data_level_based(opt, args):
     if opt<0: return [], []
     global suffix
     def sum_digits(no)->int:
@@ -95,7 +102,7 @@ def gen_data_random(opt, args):
         return res 
     valid=[]
     for i in range(1,1000):
-        if opt==0 and sum_digits(i)<=9:
+        if opt==0 and sum_digits(i)<=10:
             valid.append(i)
         elif opt==1 and sum_digits(i)<=15:
             valid.append(i)
@@ -103,11 +110,15 @@ def gen_data_random(opt, args):
             valid.append(i)
     def compare(i1,i2):
         return sum_digits(i1) - sum_digits(i2)
-    m=int(len(valid)*0.1)
-    np.random.shuffle(valid)
-    train, test = valid[:m],valid[m:]
-    train = sorted(train,key=cmp_to_key(compare))
-    test = sorted(test,key=cmp_to_key(compare))
+    m=int(len(valid)*0.8)
+    if args["order"] == 0:
+        train, test = valid[:m],valid[m:]
+    if args["order"] == 1:
+        np.random.shuffle(valid)
+        train, test = valid[:m],valid[m:]
+    if args["order"] == 2:
+        train = sorted(train,key=cmp_to_key(compare))
+        test = sorted(test,key=cmp_to_key(compare))
     with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)
     with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
@@ -115,14 +126,9 @@ def gen_data_random(opt, args):
     return train, test
 
 def gen_data_natural(args):
+    m = int(282*0.8)
     total_set = [i for i in range(1, 1000)]
-    # Controls how much data is there in test set.
-    m=5
-    train, test = None, None
-    train = total_set[:m] + total_set[9:9+m] + total_set[99:99+m] + \
-            total_set[199:199+m] + [total_set[299]] 
-    test = total_set[m:2*m] + total_set[9+m:9+2*m] + total_set[99+m:99+2*m] + \
-           total_set[199+m:199+2*m] + total_set[300:]
+    train, test = total_set[:m], total_set[m:]
     with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)
     with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:

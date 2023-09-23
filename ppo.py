@@ -125,12 +125,6 @@ def test_env(model):
         if done: break
     return cum_reward
 
-def gen_data(args): 
-    if args["order"] == 0: # RANDOM ORDER but sorted in ease of difficulty.
-        return U.gen_data_random(args["ease"], args)
-    if args["order"] ==1:
-        return U.gen_data_natural(args)
-    return None, None
                 
 if __name__=='__main__':
     suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
@@ -139,7 +133,7 @@ if __name__=='__main__':
     logging.basicConfig(level = args["log"], format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
     LOG = logging.getLogger(__name__)
     LOG.warning(f'Params: {args}')
-    train_set,test_set=gen_data(args)
+    train_set,test_set=U.gen_data(args)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     time_to_learn = 100

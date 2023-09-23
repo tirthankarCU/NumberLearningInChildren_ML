@@ -142,7 +142,7 @@ class RlNlpWorld(gym.Env):
         self.curr_time += 1
         if action == self.nlp_obj.get_next_actions():
             self.nlp_obj.incr()
-            reward = 1
+            reward = 0.2
         else: 
             # If one instruction is not followed the task fails.
             terminated = True 
