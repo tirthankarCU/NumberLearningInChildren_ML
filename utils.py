@@ -88,6 +88,8 @@ def gen_data(args):
         return gen_data_level_based(args["ease"], args)
     if args["order"] == 3:
         return gen_data_natural(args)
+    if args["order"] == 4:
+        return gen_data_selected_training(args)
     return None, None
 
 def gen_data_level_based(opt, args):
@@ -101,7 +103,7 @@ def gen_data_level_based(opt, args):
             no=no//10
         return res 
     valid=[]
-    for i in range(1,1000):
+    for i in range(1,100):
         if opt==0 and sum_digits(i)<=10:
             valid.append(i)
         elif opt==1 and sum_digits(i)<=15:
@@ -127,11 +129,16 @@ def gen_data_level_based(opt, args):
     return train, test
 
 def gen_data_natural(args):
-    m = int(282*0.8)
-    total_set = [i for i in range(1, 1000)]
+    m = int(100*0.5)
+    total_set = [i for i in range(1, 100)]
     train, test = total_set[:m], total_set[m:]
     with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)
     with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(test, file)
+    return train, test
+
+def gen_data_selected_training(args):
+    train, test = [1, 2, 10, 11, 12, 20, 21, 22, 100, 110, 111, 120, 121,
+                   200, 210, 211, 220, 221], [i for i in range(1, 1000)]
     return train, test
