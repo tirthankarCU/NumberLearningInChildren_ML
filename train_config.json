@@ -1,6 +1,6 @@
 {
     "model": 1,
-    "ease": 0,
+    "ease": -1,
     "instr_type": 1,
     "iter": 200,
     "log": 30,

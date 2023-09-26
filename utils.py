@@ -84,14 +84,20 @@ def pre_process_text(model,state):
     return text 
 
 def gen_data(args): 
-    if args["ease"] < 0: return [], []
+    train, test = None, None
+    if args["ease"] < 0: 
+        train, test = [1]*5, [1]*5
     if args["order"] < 3: # RANDOM ORDER but sorted in ease of difficulty.
-        return gen_data_level_based(args["ease"], args)
+        train, test = gen_data_level_based(args["ease"], args)
     if args["order"] == 3:
-        return gen_data_natural(args)
+        train, test = gen_data_natural(args)
     if args["order"] == 4:
-        return gen_data_selected_training(args)
-    return None, None
+        train, test = gen_data_selected_training(args)
+    with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+        json.dump(train, file)
+    with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+        json.dump(test, file)
+    return train, test
 
 def gen_data_level_based(opt, args):
     global suffix
@@ -122,20 +128,12 @@ def gen_data_level_based(opt, args):
         train, test = valid[:m],valid[m:]
         train = sorted(train,key=cmp_to_key(compare))
         test = sorted(test,key=cmp_to_key(compare))
-    with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
-        json.dump(train, file)
-    with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
-        json.dump(test, file)
     return train, test
 
 def gen_data_natural(args):
     m = int(100*0.5)
     total_set = [i for i in range(1, 100)]
     train, test = total_set[:m], total_set[m:]
-    with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
-        json.dump(train, file)
-    with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
-        json.dump(test, file)
     return train, test
 
 def gen_data_selected_training(args):
