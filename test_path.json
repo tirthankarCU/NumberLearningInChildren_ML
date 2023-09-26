@@ -44,8 +44,8 @@
 			"type": 1,
 			"path": "results/easy/nlp_stateInstr/model_fnlp_easy_stateInstr.ml"
 		},
-		"train_set": "results/easy/nlp_stateInstr/train_setfnlp_easy_stateInstr.json", 
-		"test_set": "results/easy/nlp_stateInstr/test_setfnlp_easy_stateInstr.json", 
+		"train_set": "results/easy/nlp_stateInstr/train_setfnlp_easy.json", 
+		"test_set": "results/easy/nlp_stateInstr/test_setfnlp_easy.json", 
 		"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_fnlp_easy_stateInstr.json",
 		"output_path": "results/easy/nlp_stateInstr"
 	}
