@@ -58,6 +58,8 @@ class RlNlpWorld(gym.Env):
             self.no=np.random.randint(1,1000)
         else:
             self.no=set_no
+        self.prev_no = 0
+        self.dismantle_target = [self.no%10, (self.no//10)%10, (self.no//100)%100]
         self.nlp_obj = CreateInstructions(self.no, type = self.instr_type)
         self.mx_timeSteps,self.curr_time=math.ceil(sum(self.nlp_obj.split_no(self.no))*2*2.5),0 # 2.5 times is the buffer given to solve the problem
         ## Gen initial info ##
@@ -80,9 +82,91 @@ class RlNlpWorld(gym.Env):
             return self.step_state(action)
         assert False, 'BAD INSTRUCTION TYPE'
 
+############################################
     def step_state(self, action):
-        pass 
+        terminated=False
+        if action<0 or action>=6:
+            reward = -1000
+            terminated = True 
+            return self._get_obs(), reward, terminated, self._get_info()
+            
+        def pick(boxArr,b_type):
+            if self.carry==False:
+                for box in boxArr:
+                    if not box.isEmpty:
+                        self.carry=True 
+                        self.boxType=b_type
+                        box.isEmpty=True
+                        return
+            
+        def put(b_type):
+            if self.carry==False or self.boxType!=b_type: return
+            self.boxType=BOXTYPE.NONE 
+            self.carry=False 
+            # constructArrElement is where the blocks are put. 
+            self.blocksLeft[b_type.value-1]-=1
+            for box in vga.constructArrElement[b_type.value-1]:
+                if box.isEmpty:
+                    box.isEmpty=False 
+                    return
+                
+        def whichNo():
+            result,power=0,100
+            for c in vga.constructArrElement:
+                cnt_box=0
+                for box in c:
+                    if not box.isEmpty:
+                        cnt_box+=1
+                result+=cnt_box*power 
+                power/=10
+            return result
+        
+        reward=0
+        if action==ACTION.PICK_BIG.value:
+            pick(vga.big_block,BOXTYPE.BIG)
+        elif action==ACTION.PICK_MED.value:
+            pick(vga.medium_block,BOXTYPE.MEDIUM)
+        elif action==ACTION.PICK_SMALL.value:
+            pick(vga.small_block,BOXTYPE.SMALL)
+        elif action==ACTION.PUT_BIG.value:
+            put(BOXTYPE.BIG)
+        elif action==ACTION.PUT_MED.value:
+            put(BOXTYPE.MEDIUM)
+        elif action==ACTION.PUT_SMALL.value:
+            put(BOXTYPE.SMALL)
 
+        '''Extra reward for following instructions'''
+        vga.carry_indicator=self.carry
+        self._visual=vga.drawAgain()
+        curr_no = whichNo()
+        solution= True if curr_no == self.no else False
+        self.curr_time += 1 
+        dismantle_curr_no = [curr_no%10, (curr_no//10)%10, (curr_no//100)%100]
+        dismantle_prev_no = [self.prev_no%10, (self.prev_no//10)%10, (self.prev_no//100)%100]
+        if (dismantle_curr_no[0] > dismantle_prev_no[0]) or \
+           (dismantle_curr_no[1] > dismantle_prev_no[1]) or \
+           (dismantle_curr_no[2] > dismantle_prev_no[2]):
+            self.prev_no = curr_no
+            reward = 1 
+        if (dismantle_curr_no[0] > self.dismantle_target[0]) or \
+           (dismantle_curr_no[1] > self.dismantle_target[1]) or \
+           (dismantle_curr_no[2] > self.dismantle_target[2]):
+            terminated = True        
+        self._text = self.nlp_obj.get_next_instructions(state_def = \
+                                                        (self.blocksLeft, 
+                                                         self.carry, 
+                                                         self.boxType.value))
+        self.nlp_obj.incr()
+        if self.curr_time>self.mx_timeSteps or solution==True:
+            terminated = True 
+        if terminated:
+            reward = 10 if solution else -10
+            self.close()
+        observation = self._get_obs()
+        info = self._get_info()
+        return observation, reward/10, terminated, info
+    
+############################################
     def step_policy(self, action):
         terminated=False
         if action<0 or action>=6:
@@ -158,6 +242,7 @@ class RlNlpWorld(gym.Env):
         observation = self._get_obs()
         info = self._get_info()
         return observation, reward/10, terminated, info
+    
 ############################################
     @property
     def threshold_reward(self):
