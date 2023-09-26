@@ -39,6 +39,16 @@
 		"train_result_plot": "results/easy/nlp/test_reward_list_fnlp_easy.json",
 		"output_path": "results/easy/nlp"
 	},
+	"model_fnlp_naive_stateInstr":{
+		"model": {
+			"type": 1,
+			"path": "results/naive/nlp_stateInstr/model_fnlp_easy_stateInstr.ml"
+		},
+		"train_set": "results/naive/nlp_stateInstr/train_setfnlp_easy.json", 
+		"test_set": "results/naive/nlp_stateInstr/test_setfnlp_easy.json", 
+		"train_result_plot": "results/naive/nlp_stateInstr/test_reward_list_fnlp_easy_stateInstr.json",
+		"output_path": "results/naive/nlp_stateInstr"
+	},
 	"model_fnlp_easy_stateInstr":{
 		"model": {
 			"type": 1,

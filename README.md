@@ -108,3 +108,6 @@ lr = 8e-6
 To Do: -
 Reward based on progress
 Create new dataset with natural flow.
+
+**Early Stopping is already implemented, checkout threashold_reward, need to change few parameters.**
+threshold_reward = env.threshold_reward

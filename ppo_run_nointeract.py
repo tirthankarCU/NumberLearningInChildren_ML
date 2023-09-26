@@ -74,7 +74,7 @@ if __name__=='__main__':
     for model_to_test in models_to_test:
         for id, val in enumerate(model_to_test):
             model_to_test[id] = 'model_' + val 
-    with open('train_config.json', 'r') as file:
+    with open('test_config.json', 'r') as file:
         args = json.load(file)
     '''
     FOR NEW TYPE OF INSTRUCTION (START)

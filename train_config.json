@@ -2,8 +2,8 @@
     "model": 1,
     "ease": 0,
     "instr_type": 1,
-    "iter": -1,
+    "iter": 200,
     "log": 30,
-    "order": 1,
+    "order": "NA",
     "comments": "iter[-1 -> means ignore] log[30 -> logging.WARN] order[(0,1) -> (random/natural)]" 
 }

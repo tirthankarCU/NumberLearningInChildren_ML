@@ -84,6 +84,7 @@ def pre_process_text(model,state):
     return text 
 
 def gen_data(args): 
+    if args["ease"] < 0: return [], []
     if args["order"] < 3: # RANDOM ORDER but sorted in ease of difficulty.
         return gen_data_level_based(args["ease"], args)
     if args["order"] == 3:
@@ -93,7 +94,6 @@ def gen_data(args):
     return None, None
 
 def gen_data_level_based(opt, args):
-    if opt<0: return [], []
     global suffix
     def sum_digits(no)->int:
         res=0
