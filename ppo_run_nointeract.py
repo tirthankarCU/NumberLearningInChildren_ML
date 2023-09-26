@@ -102,10 +102,8 @@ if __name__=='__main__':
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         if value["model"]["type"] == 0: # CNN MODEL
             model = M.NNModel().to(device)
-        elif value["model"]["type"] == 1 and instr_type == 'policy': # NLP MODEL
+        elif value["model"]["type"] == 1:
             model = MNLP.NNModelNLP().to(device)
-        elif value["model"]["type"] == 1 and instr_type == 'state':
-            model = MNLP.NNModelNLP(instr_type = instr_type).to(device)
         model.load_state_dict(torch.load(f'{value["model"]["path"]}'))
         
         # TRAIN

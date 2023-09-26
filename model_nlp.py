@@ -17,7 +17,7 @@ LOG = logging.getLogger(__name__)
 noOfActions=6
 epochA=0
 class NNModelNLP(nn.Module):
-    def __init__(self, instr_type = 'policy'):
+    def __init__(self, job_type = None):
         super().__init__()
         self.resnet=models.resnet18(pretrained=True)
         num_dim_in=self.resnet.fc.in_features
@@ -62,7 +62,7 @@ class NNModelNLP(nn.Module):
         )
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         # DQN for transfer task
-        if instr_type == 'state':
+        if job_type == 'transfer_task':
             self.transfer = nn.Sequential(
                                             nn.Linear(self.noOfActions, 3), # Transfer task has 3 output (greater, equal, lesser)                                        nn.Softmax(dim = 1)
                                         )
