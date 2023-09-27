@@ -136,7 +136,7 @@ if __name__=='__main__':
     train_set,test_set=U.gen_data(args)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    time_to_learn = 100
+    time_to_learn = 200
     max_episodes = max(time_to_learn*len(train_set),args["iter"])
     LOG.info(f'Number of Episodes Tr[{len(train_set)}]*{time_to_learn} = {max_episodes}')
     max_steps_per_episode_list=[25,50,100,5] # my_estimation

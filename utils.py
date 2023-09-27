@@ -87,11 +87,11 @@ def gen_data(args):
     train, test = None, None
     if args["ease"] < 0: 
         train, test = [1]*5, [1]*5
-    if args["order"] < 3: # RANDOM ORDER but sorted in ease of difficulty.
+    elif args["order"] < 3: # RANDOM ORDER but sorted in ease of difficulty.
         train, test = gen_data_level_based(args["ease"], args)
-    if args["order"] == 3:
+    elif args["order"] == 3:
         train, test = gen_data_natural(args)
-    if args["order"] == 4:
+    elif args["order"] == 4:
         train, test = gen_data_selected_training(args)
     with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)

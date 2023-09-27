@@ -1,7 +1,7 @@
 {
     "model": 1,
-    "ease": -1,
+    "ease": 0,
     "instr_type": 1,
     "log": 20,
-    "comments": "iter[-1 -> means ignore] log[30 -> logging.WARN] order[(0,1) -> (random/natural)]" 
+    "comments": "iter[-1 -> means ignore] log[30 -> logging.WARN]" 
 }
