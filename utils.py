@@ -146,9 +146,26 @@ def gen_data_selected_training(args):
     return train, test
 
 def make_own_seq(args):
+    # train, test = [1, 2, 3, 4, 5], [6, 7, 8, 9]
     train, test = [1, 2, 3, 4, 5], [6, 7, 8, 9]
-    return train, test
+    train_new, test_new = [], []
+    incr = 0
+    for _ in range(9):
+        for x in train:
+            train_new.append(x+incr)
+        for x in test:
+            test_new.append(x+incr)
+        incr += 10
+    return train_new, test_new
 
 def make_own_rand(args):
     train, test = [2, 6, 3, 8, 7], [1, 5, 9, 4]
-    return train, test
+    train_new, test_new = [], []
+    incr = 0
+    for _ in range(9):
+        for x in train:
+            train_new.append(x+incr)
+        for x in test:
+            test_new.append(x+incr)
+        incr += 10
+    return train_new, test_new
