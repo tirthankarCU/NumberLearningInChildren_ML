@@ -83,7 +83,7 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp,
             surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advantage
             actor_loss  = - torch.min(surr1, surr2).mean()
             critic_loss = (return_ - value).pow(2).mean()
-            loss = 0.5 * critic_loss + actor_loss - 0.1 * entropy
+            loss = 0.5 * critic_loss + actor_loss - 0.01 * entropy
             LOG.debug(f'Shapes RS[{ratio.shape}], NLPS[{new_log_probs.shape}], OLPS[{old_log_probs.shape}], S1S[{surr1.shape}], S2S[{surr2.shape}], AS[{advantage.shape}]')
             LOG.debug(f'TL[{loss.item()}], CL[{critic_loss.item()}], AL[{actor_loss.item()}], EL[{entropy.item()}]')
             if frame_idx % 1000 == 0:
@@ -136,7 +136,7 @@ if __name__=='__main__':
     train_set,test_set=U.gen_data(args)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    time_to_learn = 200
+    time_to_learn = 100
     max_episodes = max(time_to_learn*len(train_set),args["iter"])
     LOG.info(f'Number of Episodes Tr[{len(train_set)}]*{time_to_learn} = {max_episodes}')
     max_steps_per_episode_list=[25,50,100,5] # my_estimation

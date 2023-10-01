@@ -93,6 +93,10 @@ def gen_data(args):
         train, test = gen_data_natural(args)
     elif args["order"] == 4:
         train, test = gen_data_selected_training(args)
+    elif args["order"] == 1024:
+        train, test = make_own_seq(args)
+    elif args["order"] == 2048:
+        train, test = make_own_rand(args)
     with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)
     with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
@@ -139,4 +143,12 @@ def gen_data_natural(args):
 def gen_data_selected_training(args):
     train, test = [1, 2, 10, 11, 12, 20, 21, 22, 100, 110, 111, 120, 121,
                    200, 210, 211, 220, 221], [i for i in range(1, 1000)]
+    return train, test
+
+def make_own_seq(args):
+    train, test = [1, 2, 3, 4, 5], [6, 7, 8, 9]
+    return train, test
+
+def make_own_rand(args):
+    train, test = [2, 6, 3, 8, 7], [1, 5, 9, 4]
     return train, test
