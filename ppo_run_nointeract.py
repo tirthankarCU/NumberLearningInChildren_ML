@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import gym 
 import gym_examples
 import copy
+import model_simple as M_Simp
 
 logging.basicConfig(filename='console_output.txt', filemode='w', level = logging.INFO, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
 LOG = logging.getLogger(__name__)
@@ -30,10 +31,15 @@ def plot_ppo(ip,op):
 def run_agent(number,opt):
     def policy(S):
         nonlocal opt
+        
         if opt == 0:
             dist, value = model(S['visual'])
         elif opt == 1:
             dist, value = model(S['visual'],S['text'])
+        elif opt == 2:
+            S['text'] = model.pre_process([S['text']])
+            dist, value = model(S['text'])
+
         action = dist.sample()
         return action.cpu().numpy().item()
     dbg=False
@@ -70,7 +76,9 @@ if __name__=='__main__':
     '''
     List of models that are available to be tested
     '''
-    models_to_test = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
+    models_to_test = [['easy','medium','hard','naive'], \
+                      ['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive'], \
+                      ['onlp_easy','onlp_medium','onlp_hard','onlp_naive']] # Only NLP.
     for model_to_test in models_to_test:
         for id, val in enumerate(model_to_test):
             model_to_test[id] = 'model_' + val 
@@ -104,6 +112,8 @@ if __name__=='__main__':
             model = M.NNModel().to(device)
         elif value["model"]["type"] == 1:
             model = MNLP.NNModelNLP().to(device)
+        elif value["model"]["type"] == 2:
+            model = M_Simp.NN_Simple().to(device)
         model.load_state_dict(torch.load(f'{value["model"]["path"]}'))
         
         # TRAIN

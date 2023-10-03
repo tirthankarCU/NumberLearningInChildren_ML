@@ -152,11 +152,11 @@ class RlNlpWorld(gym.Env):
            (dismantle_curr_no[1] > self.dismantle_target[1]) or \
            (dismantle_curr_no[2] > self.dismantle_target[2]):
             terminated = True        
+        self.nlp_obj.incr()
         self._text = self.nlp_obj.get_next_instructions(state_def = \
                                                         (self.blocksLeft, 
                                                          self.carry, 
                                                          self.boxType.value))
-        self.nlp_obj.incr()
         if self.curr_time>self.mx_timeSteps or solution==True:
             terminated = True 
         if terminated:

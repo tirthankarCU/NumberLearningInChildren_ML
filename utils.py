@@ -7,7 +7,9 @@ from PIL import Image
 import cv2
 import json 
 from functools import cmp_to_key
-suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
+suffix = [['easy','medium','hard','naive'], \
+          ['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive'], \
+          ['onlp_easy','onlp_medium','onlp_hard','onlp_naive']] # Only NLP.
 
 def plot(data,ylb,title):
     plt.plot([i for i in range(1,)],data,color='mediumvioletred',marker='o')
@@ -150,7 +152,7 @@ def make_own_seq(args):
     train, test = [1, 2, 3, 4, 5], [6, 7, 8, 9]
     train_new, test_new = [], []
     incr = 0
-    for _ in range(9):
+    for _ in range(1): # 1 - 1 digit; 9 - 2 digit number
         for x in train:
             train_new.append(x+incr)
         for x in test:
@@ -162,7 +164,7 @@ def make_own_rand(args):
     train, test = [2, 6, 3, 8, 7], [1, 5, 9, 4]
     train_new, test_new = [], []
     incr = 0
-    for _ in range(9):
+    for _ in range(1): # 1 - 1 digit; 9 - 2 digit number
         for x in train:
             train_new.append(x+incr)
         for x in test:

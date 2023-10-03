@@ -7,6 +7,7 @@ import time
 import utils as U
 import model as M
 import model_nlp as MNLP
+import model_simple as M_Simp
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -50,12 +51,20 @@ def STEPS(envs,action):
 
 
 def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantage):
-    batch_size = states.size(0)
+    
+    if args["model"] == 0:
+        batch_size = states.size(0)
+    elif args["model"] == 1:
+        batch_size = states.size(0)
+    elif args["model"] == 2:
+        batch_size = len(statesNlp)
+
     for _ in range(math.ceil(batch_size / mini_batch_size)):
         rand_ids = np.random.randint(0, batch_size, mini_batch_size)
+        
         if args["model"] == 0:
             yield states[rand_ids, :], states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
-        else:
+        elif args["model"] == 1:
             temp_dict = {}
             for r_indx in rand_ids:
                 temp = statesNlpArr[r_indx]
@@ -65,16 +74,22 @@ def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, ad
                     else:
                         temp_dict[key] = torch.cat((temp_dict[key],value),dim = 0)
             yield states[rand_ids, :], temp_dict, actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
+        elif args["model"] == 2:
+            yield None, statesNlpArr[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
 
 
-def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlp, actions, log_probs, returns, advantages, clip_param=0.2):
+def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlps, actions, log_probs, returns, advantages, clip_param=0.2):
     global frame_idx
     for _ in range(ppo_epochs):
-        for state, stateNlp, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantages):
+        for state, stateNlp, action, old_log_probs, return_, advantage in ppo_iter(mini_batch_size, states, statesNlps, actions, log_probs, returns, advantages):
+            
             if args["model"] == 0:
                 dist, value = model(state)
             elif args["model"] == 1:
                 dist, value = model(state,stateNlp)
+            elif args["model"] == 2:
+                dist, value = model(stateNlp)
+
             entropy = dist.entropy().mean()
             new_log_probs = dist.log_prob(action)
             LOG.debug(f'[action | dist_logProb | dist_newlogProb] {action[0]} {dist.log_prob(action[0])} {new_log_probs}')
@@ -104,22 +119,31 @@ def compute_gae(next_value, rewards, masks, values, gamma=0.99, tau=0.95):
 
 def test_env(model):
     global max_steps_per_episode, device 
-    env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array")
     state = RESETS(env, override=False)
+
     state["visual"] = U.pre_process(state)
     if args["model"] == 1:
         state["text"] = U.pre_process_text(model,state)
+    elif args["model"] == 2:
+        state['text'] = model.pre_process([state['text']])
+    
     cum_reward=0
     for _ in range(max_steps_per_episode):
         if args["model"] == 0:
             dist, value = model(state["visual"])
         elif args["model"] == 1:
-            dist, value = model(state['visual'],state['text'])   
+            dist, value = model(state['visual'],state['text'])  
+        elif args["model"] == 2:
+            dist, value = model(state['text']) 
+
         action = dist.sample()
         next_state, reward, done, info = STEPS(env,action.item())
         next_state["visual"] = U.pre_process(next_state)
         if args["model"] == 1:
             next_state["text"] = U.pre_process_text(model,next_state)
+        elif args["model"] == 2:
+            next_state['text'] = model.pre_process([next_state['text']]) 
+
         state=copy.deepcopy(next_state)
         cum_reward += reward 
         if done: break
@@ -127,7 +151,9 @@ def test_env(model):
 
                 
 if __name__=='__main__':
-    suffix = [['easy','medium','hard','naive'],['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive']]
+    suffix = [['easy','medium','hard','naive'], \
+              ['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive'], \
+              ['onlp_easy','onlp_medium','onlp_hard','onlp_naive']] # Only NLP.
     with open('train_config.json', 'r') as file:
         args = json.load(file)
     logging.basicConfig(level = args["log"], format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
@@ -166,6 +192,8 @@ if __name__=='__main__':
     # threshold_reward = envs[0].threshold_reward
     elif args["model"] == 1: # NLP CNN model
         model = MNLP.NNModelNLP().to(device)
+    elif args["model"] == 2:
+        model = M_Simp.NN_Simple().to(device)
     threshold_reward = env.threshold_reward
     optimizer = optim.Adam(model.parameters(), lr=lr)
     test_rewards = []
@@ -187,16 +215,26 @@ if __name__=='__main__':
         masksArr     = []
         entropy = 0
         state = RESETS(env)
-        state["visual"] = U.pre_process(state)
+
+        if args["model"] == 0:
+            state["visual"] = U.pre_process(state)
         if args["model"] == 1:
+            state["visual"] = U.pre_process(state)
             state["text"] = U.pre_process_text(model,state)
+        if args["model"] == 2:
+            state["text"] = model.pre_process([state["text"]])
+
         episodeNo += 1
         extra_padding = 25
         for _iter in range(max_steps_per_episode+extra_padding):
+            
             if args["model"] == 0:
                 dist, value = model(state["visual"])
             elif args["model"] == 1:
                 dist, value = model(state['visual'],state['text'])
+            elif args["model"] == 2:
+                dist, value = model(state['text'])
+
             action = dist.sample()
             if action.item() not in action_dict:
                 action_dict[action.item()] = 0
@@ -207,9 +245,14 @@ if __name__=='__main__':
             reward_dict[reward] += 1
             LOG.debug(f'Current action[{action.item()}] reward[{reward}]')
             
-            next_state["visual"] = U.pre_process(next_state)
+            if args["model"] == 0:
+                next_state["visual"] = U.pre_process(next_state)
             if args["model"] == 1:
+                next_state["visual"] = U.pre_process(next_state)
                 next_state["text"] = U.pre_process_text(model,next_state)
+            elif args["model"] == 2:
+                next_state["text"] = model.pre_process([next_state["text"]])
+            
             log_prob = dist.log_prob(action)
             entropy += dist.entropy().mean()
             valuesArr.append(value)
@@ -223,10 +266,12 @@ if __name__=='__main__':
             elif args["model"] == 1:
                 statesArr.append(state["visual"])
                 statesNlpArr.append(state["text"])
+            elif args["model"] == 2:
+                statesNlpArr.append(state["text"])
                 
             state = copy.deepcopy(next_state)
             if frame_idx % 1000 == 0:
-                test_reward = np.mean([test_env(model) for _ in range(5)])
+                test_reward = np.mean([test_env(model) for _ in range(1)])
                 test_rewards.append([frame_idx,test_reward])
                 LOG.warning(f'Discovery {action_dict}, {reward_dict}')
                 with open(f'results/test_reward_list_{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
@@ -241,15 +286,19 @@ if __name__=='__main__':
             _, next_value = model(next_state["visual"])
         elif args["model"] == 1:
             _, next_value = model(next_state["visual"],next_state['text'])
+        elif args["model"] == 2:
+            _, next_value = model(next_state["text"])
         returns = compute_gae(next_value, rewardsArr, masksArr, valuesArr)
 
         returns   = torch.cat(returns).detach()
         log_probsArr = torch.cat(log_probsArr).detach()
         valuesArr    = torch.cat(valuesArr).detach()
-        statesArr    = torch.cat(statesArr)
+        if args["model"] == 2: # feature  
+            statesNlpArr = torch.cat(statesNlpArr)
+        if args["model"] != 2: # exception
+            statesArr = torch.cat(statesArr)
         actionsArr   = torch.cat(actionsArr)
         advantage = returns - valuesArr
-        # assert advantage.all() < max_advantage, f'{returns} {valuesArr}'
         ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
     torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
     

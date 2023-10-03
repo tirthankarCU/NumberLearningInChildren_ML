@@ -58,5 +58,15 @@
 		"test_set": "results/easy/nlp_stateInstr/test_setfnlp_easy.json", 
 		"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_fnlp_easy_stateInstr.json",
 		"output_path": "results/easy/nlp_stateInstr"
+	},
+	"model_onlp_naive_stateInstr":{
+		"model": {
+			"type": 2,
+			"path": "results/naive/nlp_stateInstr/model_onlp_naive_stateInstr.ml"
+		},
+		"train_set": [], 
+		"test_set": [], 
+		"train_result_plot": "results/naive/nlp_stateInstr/test_reward_list_onlp_naive_stateInstr.json",
+		"output_path": "results/naive/nlp_stateInstr"
 	}
 }
