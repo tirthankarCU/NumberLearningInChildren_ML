@@ -1,4 +1,31 @@
-# Only the PPO code works in this branch.
+## Results.
+
+1. Policy Instruction [Random]
+train -0.12888888888888891
+test -0.1166666666666667
+
+2. Policy Instruction [Organized; natural order]
+train 0.44
+test 0.3861111111111113
+"68": {"cumulative_reward": 3.700000000000001, "action": [1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5, 2, 5]
+
+**If examples are too hard agent cannot learn anything.**
+**Too much order is also bad; model starts overfitting**
+
+3. State-based Instrctions [Organized] 2 digit.
+train -0.42666666666666664
+test 0.34166666666666656
+**Not solving fast enough**
+
+4. State-based Instrctions [Organized/Random] 1 digit.
+Solved
+
+5. Simple model [NLP ~ DNN] 2 digit.
+train -0.10222222222222212
+test -0.28333333333333344
+
+
+## Only the PPO code works in this branch.
 
 ## How to run :-
 > Currently docker build is not working from inside the VMs. It's better to pull the docker image I have created. **sudo docker pull tirthankar95/rl-nlp:latest**
