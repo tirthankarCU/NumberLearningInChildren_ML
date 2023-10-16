@@ -1,8 +1,8 @@
 {
-    "model": 2,
+    "model": 1,
     "ease": 0,
-    "instr_type": 1,
-    "iter": -1,
+    "instr_type": 0,
+    "iter": 5000,
     "log": 30,
     "order": 1024,
     "comments": "iter[-1 -> means ignore] log[30 -> logging.WARN]" 

@@ -68,5 +68,26 @@
 		"test_set": [], 
 		"train_result_plot": "results/naive/nlp_stateInstr/test_reward_list_onlp_naive_stateInstr.json",
 		"output_path": "results/naive/nlp_stateInstr"
-	}
+	},
+	"model_onlp_easy_stateInstr":{
+			"model": {
+					"type": 2,
+					"path": "results/easy/nlp_stateInstr/model_onlp_easy_stateInstr.ml"
+			},
+			"train_set": "results/easy/nlp_stateInstr/train_setonlp_easy.json",
+			"test_set": "results/easy/nlp_stateInstr/test_setonlp_easy.json",
+			"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_onlp_easy_stateInstr.json",
+			"output_path": "results/easy/nlp_stateInstr"
+	},
+        "model_onlp_easy":{
+                        "model": {
+                                        "type": 2,
+                                        "path": "results/easy/nlp/model_onlp_easy.ml"
+                        },
+                        "train_set": "results/easy/nlp/train_setonlp_easy.json",
+                        "test_set": "results/easy/nlp/test_setonlp_easy.json",
+                        "train_result_plot": "results/easy/nlp/test_reward_list_onlp_easy.json",
+                        "output_path": "results/easy/nlp"
+        }
+	
 }

@@ -99,6 +99,8 @@ def gen_data(args):
         train, test = make_own_seq(args)
     elif args["order"] == 2048:
         train, test = make_own_rand(args)
+    elif args["order"] == 1010:
+        train, test = make_task_sanity(args)
     with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)
     with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
@@ -171,3 +173,7 @@ def make_own_rand(args):
             test_new.append(x+incr)
         incr += 10
     return train_new, test_new
+
+def make_task_sanity(args):
+    train, test = [100, 10, 1, 110, 101, 111], [1, 2, 102, 112]
+    return train, test
