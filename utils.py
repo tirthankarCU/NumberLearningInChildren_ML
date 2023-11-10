@@ -6,10 +6,12 @@ import torchvision.transforms as transforms
 from PIL import Image
 import cv2
 import json 
+import random
 from functools import cmp_to_key
 suffix = [['easy','medium','hard','naive'], \
           ['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive'], \
           ['onlp_easy','onlp_medium','onlp_hard','onlp_naive']] # Only NLP.
+
 
 def plot(data,ylb,title):
     plt.plot([i for i in range(1,)],data,color='mediumvioletred',marker='o')
@@ -117,7 +119,7 @@ def gen_data_level_based(opt, args):
             no=no//10
         return res 
     valid=[]
-    for i in range(1,100):
+    for i in range(1,1000):
         if opt==0 and sum_digits(i)<=10:
             valid.append(i)
         elif opt==1 and sum_digits(i)<=15:
@@ -126,16 +128,10 @@ def gen_data_level_based(opt, args):
             valid.append(i)
     def compare(i1,i2):
         return sum_digits(i1) - sum_digits(i2)
-    m=int(len(valid)*0.8)
-    if args["order"] == 0:
-        train, test = valid[:m],valid[m:]
-    if args["order"] == 1:
-        np.random.shuffle(valid)
-        train, test = valid[:m],valid[m:]
-    if args["order"] == 2:
-        train, test = valid[:m],valid[m:]
-        train = sorted(train,key=cmp_to_key(compare))
-        test = sorted(test,key=cmp_to_key(compare))
+    m=int(len(valid)*0.7)
+    random.shuffle(valid)
+    train, test = valid[:m],valid[m:]
+    train.sort(); test.sort()
     return train, test
 
 def gen_data_natural(args):
