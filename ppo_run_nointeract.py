@@ -6,6 +6,7 @@ sys.path.append(f'{os.getcwd()}/gym-examples')
 import utils as U
 import model as M
 import model_nlp as MNLP
+import model_attention as M_Attn
 import torch 
 import matplotlib.pyplot as plt 
 import gym 
@@ -39,6 +40,9 @@ def run_agent(number,opt):
         elif opt == 2:
             S['text'] = model.pre_process([S['text']])
             dist, value = model(S['text'])
+        elif opt == 3:
+            S['text'] = model.pre_process([S['text']])
+            dist, value = model(S['visual'],S['text'])
 
         action = dist.sample()
         return action.cpu().numpy().item()
@@ -78,7 +82,8 @@ if __name__=='__main__':
     '''
     models_to_test = [['easy','medium','hard','naive'], \
                       ['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive'], \
-                      ['onlp_easy','onlp_medium','onlp_hard','onlp_naive']] # Only NLP.
+                      ['onlp_easy','onlp_medium','onlp_hard','onlp_naive'], \
+                      ['anlp_easy','anlp_medium','anlp_hard','anlp_naive']]
     for model_to_test in models_to_test:
         for id, val in enumerate(model_to_test):
             model_to_test[id] = 'model_' + val 
@@ -114,6 +119,10 @@ if __name__=='__main__':
             model = MNLP.NNModelNLP().to(device)
         elif value["model"]["type"] == 2:
             model = M_Simp.NN_Simple().to(device)
+        elif value["model"]["type"] == 3:
+            img_shape = (3, 224, 224)
+            model = M_Attn.NNAttention(img_shape).to(device)
+
         model.load_state_dict(torch.load(f'{value["model"]["path"]}'))
         
         # TRAIN

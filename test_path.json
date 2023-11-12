@@ -79,15 +79,34 @@
 			"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_onlp_easy_stateInstr.json",
 			"output_path": "results/easy/nlp_stateInstr"
 	},
-        "model_onlp_easy":{
-                        "model": {
-                                        "type": 2,
-                                        "path": "results/easy/nlp/model_onlp_easy.ml"
-                        },
-                        "train_set": "results/easy/nlp/train_setonlp_easy.json",
-                        "test_set": "results/easy/nlp/test_setonlp_easy.json",
-                        "train_result_plot": "results/easy/nlp/test_reward_list_onlp_easy.json",
-                        "output_path": "results/easy/nlp"
-        }
-	
+    "model_onlp_easy":{
+            "model": {
+                    "type": 2,
+                    "path": "results/easy/nlp/model_onlp_easy.ml"
+            },
+            "train_set": "results/easy/nlp/train_setonlp_easy.json",
+            "test_set": "results/easy/nlp/test_setonlp_easy.json",
+            "train_result_plot": "results/easy/nlp/test_reward_list_onlp_easy.json",
+            "output_path": "results/easy/nlp"
+    },
+	"model_anlp_easy_stateInstr":{
+			"model": {
+					"type": 3,
+					"path": "results/easy/nlp_stateInstr/model_anlp_easy_stateInstr.ml"
+			},
+			"train_set": "results/easy/nlp_stateInstr/train_setanlp_easy.json",
+			"test_set": "results/easy/nlp_stateInstr/test_setanlp_easy.json",
+			"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_anlp_easy_stateInstr.json",
+			"output_path": "results/easy/nlp_stateInstr"
+	},
+	"model_anlp_easy":{
+		"model": {
+				"type": 3,
+				"path": "results/easy/nlp/model_anlp_easy.ml"
+		},
+		"train_set": "results/easy/nlp/train_setanlp_easy.json",
+		"test_set": "results/easy/nlp/test_setanlp_easy.json",
+		"train_result_plot": "results/easy/nlp/test_reward_list_anlp_easy.json",
+		"output_path": "results/easy/nlp"
+	}
 }
