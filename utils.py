@@ -10,7 +10,8 @@ import random
 from functools import cmp_to_key
 suffix = [['easy','medium','hard','naive'], \
           ['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive'], \
-          ['onlp_easy','onlp_medium','onlp_hard','onlp_naive']] # Only NLP.
+          ['onlp_easy','onlp_medium','onlp_hard','onlp_naive'], \
+          ['anlp_easy','anlp_medium','anlp_hard','anlp_naive']] # Only NLP.
 
 
 def plot(data,ylb,title):
@@ -86,7 +87,7 @@ def pre_process_text(model,state):
     TEXT = state["text"]+" [PAD]"*model.mxSentenceLength 
     text = model.tokenizer(TEXT,padding=True,truncation=True,max_length=model.mxSentenceLength,return_tensors="pt")
     return text 
-
+    
 def gen_data(args): 
     train, test = None, None
     if args["ease"] < 0: 

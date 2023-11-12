@@ -8,6 +8,7 @@ import utils as U
 import model as M
 import model_nlp as MNLP
 import model_simple as M_Simp
+import model_attention as M_Attn
 import torch 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -51,12 +52,13 @@ def STEPS(envs,action):
 
 
 def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantage):
-    
     if args["model"] == 0:
         batch_size = states.size(0)
     elif args["model"] == 1:
         batch_size = states.size(0)
     elif args["model"] == 2:
+        batch_size = len(statesNlp)
+    elif args["model"] == 3:
         batch_size = len(statesNlp)
 
     for _ in range(math.ceil(batch_size / mini_batch_size)):
@@ -126,7 +128,9 @@ def test_env(model):
         state["text"] = U.pre_process_text(model,state)
     elif args["model"] == 2:
         state['text'] = model.pre_process([state['text']])
-    
+    elif args["model"] == 3:
+        state["text"] = model.pre_process([state["text"]])
+
     cum_reward=0
     for _ in range(max_steps_per_episode):
         if args["model"] == 0:
@@ -135,6 +139,8 @@ def test_env(model):
             dist, value = model(state['visual'],state['text'])  
         elif args["model"] == 2:
             dist, value = model(state['text']) 
+        elif args["model"] == 3:
+            dist, value = model(state["visual"], state["text"])
 
         action = dist.sample()
         next_state, reward, done, info = STEPS(env,action.item())
@@ -143,6 +149,8 @@ def test_env(model):
             next_state["text"] = U.pre_process_text(model,next_state)
         elif args["model"] == 2:
             next_state['text'] = model.pre_process([next_state['text']]) 
+        elif args["model"] == 3:
+            next_state["text"] = model.pre_process([next_state["text"]])
 
         state=copy.deepcopy(next_state)
         cum_reward += reward 
@@ -153,7 +161,8 @@ def test_env(model):
 if __name__=='__main__':
     suffix = [['easy','medium','hard','naive'], \
               ['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive'], \
-              ['onlp_easy','onlp_medium','onlp_hard','onlp_naive']] # Only NLP.
+              ['onlp_easy','onlp_medium','onlp_hard','onlp_naive'], \
+              ['anlp_easy','anlp_medium','anlp_hard','anlp_naive']]
     with open('train_config.json', 'r') as file:
         args = json.load(file)
     logging.basicConfig(level = args["log"], format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
@@ -194,6 +203,10 @@ if __name__=='__main__':
         model = MNLP.NNModelNLP().to(device)
     elif args["model"] == 2:
         model = M_Simp.NN_Simple().to(device)
+    elif args["model"] == 3:
+        img_shape = (3, 224, 224)
+        model = M_Attn.NNAttention(img_shape).to(device)
+
     threshold_reward = env.threshold_reward
     optimizer = optim.Adam(model.parameters(), lr=lr)
     test_rewards = []
@@ -223,6 +236,9 @@ if __name__=='__main__':
             state["text"] = U.pre_process_text(model,state)
         if args["model"] == 2:
             state["text"] = model.pre_process([state["text"]])
+        if args["model"] == 3:
+            state["visual"] = U.pre_process(state)
+            state["text"] = model.pre_process([state["text"]])
 
         episodeNo += 1
         extra_padding = 25
@@ -234,6 +250,8 @@ if __name__=='__main__':
                 dist, value = model(state['visual'],state['text'])
             elif args["model"] == 2:
                 dist, value = model(state['text'])
+            elif args["model"] == 3:
+                dist, value = model(state["visual"], state["text"])
 
             action = dist.sample()
             if action.item() not in action_dict:
@@ -252,6 +270,9 @@ if __name__=='__main__':
                 next_state["text"] = U.pre_process_text(model,next_state)
             elif args["model"] == 2:
                 next_state["text"] = model.pre_process([next_state["text"]])
+            elif args["model"] == 3:
+                next_state["visual"] = U.pre_process(next_state)
+                next_state["text"] = model.pre_process([next_state["text"]])
             
             log_prob = dist.log_prob(action)
             entropy += dist.entropy().mean()
@@ -268,6 +289,9 @@ if __name__=='__main__':
                 statesNlpArr.append(state["text"])
             elif args["model"] == 2:
                 statesNlpArr.append(state["text"])
+            elif args["model"] == 3:
+                statesArr.append(state["visual"])
+                statesNlpArr.append(state["text"])
                 
             state = copy.deepcopy(next_state)
             if frame_idx % 1000 == 0:
@@ -282,18 +306,20 @@ if __name__=='__main__':
                 torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
             frame_idx += 1
             if done: break
-        if args["model"] ==0:
+        if args["model"] == 0:
             _, next_value = model(next_state["visual"])
         elif args["model"] == 1:
             _, next_value = model(next_state["visual"],next_state['text'])
         elif args["model"] == 2:
             _, next_value = model(next_state["text"])
+        elif args["model"] == 3:
+            _, next_value = model(next_state["visual"],next_state['text'])
         returns = compute_gae(next_value, rewardsArr, masksArr, valuesArr)
 
         returns   = torch.cat(returns).detach()
         log_probsArr = torch.cat(log_probsArr).detach()
         valuesArr    = torch.cat(valuesArr).detach()
-        if args["model"] == 2: # feature  
+        if args["model"] == 2: # only nlp  
             statesNlpArr = torch.cat(statesNlpArr)
         if args["model"] != 2: # exception
             statesArr = torch.cat(statesArr)
@@ -301,4 +327,3 @@ if __name__=='__main__':
         advantage = returns - valuesArr
         ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
     torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
-    
