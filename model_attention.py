@@ -174,3 +174,12 @@ class NNAttention(nn.Module):
         logging.debug(f'Shape of input text {p_text_t.shape}')
         return p_text_t
     
+# if __name__ == '__main__':
+#     tr_ex, img_shape = 2, [3, 224, 224]
+#     img = torch.rand(tr_ex, *img_shape)
+#     nn = NNAttention(img_shape)
+#     text = ["This is one. Let's use our blocks to build the number.",
+#     "This is one. There are 0 blocks in hundred's place, 0 blocks in ten's place and 0 blocks in unit's place. You are holding a unit block."]
+#     dist, value = nn(img, nn.pre_process(text))
+#     print(dist.sample().shape, value.shape)
+#     # print()
