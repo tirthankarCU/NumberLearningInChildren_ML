@@ -5,8 +5,8 @@ import torch.nn.functional as F
 from torch.distributions import Categorical
 import os 
 
-log_level = os.getenv('LOGLEVEL', 'INFO')
-logging.basicConfig(level=getattr(logging, log_level.upper(), None))
+# log_level = os.getenv('LOGLEVEL', 'INFO')
+# logging.basicConfig(level=getattr(logging, log_level.upper(), None))
 LOG = logging.getLogger(__name__)
 __author__ = 't.mittra'
 
