@@ -78,7 +78,8 @@ def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, ad
             yield states[rand_ids, :], temp_dict, actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
         elif args["model"] == 2:
             yield None, statesNlpArr[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
-
+        elif args["model"] == 3:
+            yield states[rand_ids, :], statesNlpArr[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
 
 def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlps, actions, log_probs, returns, advantages, clip_param=0.2):
     global frame_idx
@@ -91,6 +92,8 @@ def ppo_update(model, optimizer, ppo_epochs, mini_batch_size, states, statesNlps
                 dist, value = model(state,stateNlp)
             elif args["model"] == 2:
                 dist, value = model(stateNlp)
+            elif args["model"] == 3:
+                dist, value = model(state, stateNlp)
 
             entropy = dist.entropy().mean()
             new_log_probs = dist.log_prob(action)
@@ -171,8 +174,8 @@ if __name__=='__main__':
     train_set,test_set=U.gen_data(args)
     train_set_counter=0
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    time_to_learn = 50
-    max_episodes = max(10*time_to_learn*len(train_set),args["iter"])
+    time_to_learn = 10
+    max_episodes = max(50*time_to_learn*len(train_set),args["iter"])
     LOG.info(f'Number of Episodes Tr[{len(train_set)}]*{time_to_learn} = {max_episodes}')
     max_steps_per_episode_list=[25,50,100,5] # my_estimation
     max_steps_per_episode = max_steps_per_episode_list[args["ease"]]
