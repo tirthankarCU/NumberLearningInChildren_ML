@@ -112,11 +112,21 @@
 	"model_anlp_naive_stateInstr":{
 		"model": {
 				"type": 3,
+				"path": "results/naive/nlp_stateInstr/model_anlp_naive_stateInstr.ml"
+		},
+		"train_set": "results/naive/nlp_stateInstr/train_setanlp_naive.json",
+		"test_set": "results/naive/nlp_stateInstr/test_setanlp_naive.json",
+		"train_result_plot": "results/naive/nlp_stateInstr/test_reward_list_anlp_naive_stateInstr.json",
+		"output_path": "results/naive/nlp_stateInstr"
+	},
+	"model_anlp_naive":{
+		"model": {
+				"type": 3,
 				"path": "results/naive/nlp/model_anlp_naive_stateInstr.ml"
 		},
 		"train_set": "results/naive/nlp/train_setanlp_naive.json",
 		"test_set": "results/naive/nlp/test_setanlp_naive.json",
 		"train_result_plot": "results/naive/nlp/test_reward_list_anlp_naive_stateInstr.json",
-		"output_path": "results/naive/nlp_stateInstr"
+		"output_path": "results/naive/nlp"
 	}
 }

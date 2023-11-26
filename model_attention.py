@@ -64,7 +64,7 @@ class NNAttention(nn.Module):
     def __init__(self, img_shape, embedding_val = 50, mx_sen_len = 32):
         super().__init__()
     # CNN
-        cnn_channels = [32, 64, 128]
+        cnn_channels = [16, 32, 64]
         self.cnn0 = nn.Sequential(nn.Conv2d(in_channels = 3, out_channels = cnn_channels[0],
                                             kernel_size = 3, padding = 1),
                                   nn.ReLU(),
@@ -88,7 +88,7 @@ class NNAttention(nn.Module):
         dummy_m = 2
         dummy_img = torch.rand(dummy_m,*img_shape)
         dummy_out_img = self.cnn2(self.cnn1(self.cnn0(dummy_img))).view(dummy_m, -1)
-        self.img_op = 1024
+        self.img_op = 512
         self.dnn = nn.Sequential(nn.Linear(dummy_out_img.shape[-1], self.img_op*2),
                                  nn.ReLU(),
                                  nn.Linear(self.img_op*2, self.img_op))
@@ -105,14 +105,14 @@ class NNAttention(nn.Module):
                 self.embedding[list_[0]] = [float(list_[x]) for x in range(1, embedding_val+1)]
         self.embedding["[PAD]"] = [0.0]* embedding_val
         self.dmodel0 = embedding_val
-        self.dkq0 = 128
-        self.dv0 = 128
+        self.dkq0 = 64
+        self.dv0 = 64
         self.nhead0 = 16
         self.attn0 = AttentionLayer(self.dmodel0, self.dkq0, self.dv0, self.nhead0)
     # COMBINED ATTENTION
         self.dmodel1 =   self.img_op//self.mx_sen_len + self.dmodel0
-        self.dkq1 = 64
-        self.dv1 = 64
+        self.dkq1 = 32
+        self.dv1 = 32
         self.nhead1 = 16
         self.attn1 = AttentionLayer(self.dmodel1, self.dkq1, self.dv1, self.nhead1)
     # ACTOR

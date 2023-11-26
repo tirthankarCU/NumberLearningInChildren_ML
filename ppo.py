@@ -53,18 +53,21 @@ def STEPS(envs,action):
 
 def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, advantage):
     if args["model"] == 0:
-        batch_size = states.size(0)
+        tr_size = states.size(0)
     elif args["model"] == 1:
-        batch_size = states.size(0)
+        tr_size = states.size(0)
     elif args["model"] == 2:
         print(type(states))
-        batch_size = len(statesNlp)
+        tr_size = len(statesNlp)
     elif args["model"] == 3:
-        batch_size = len(statesNlp)
+        tr_size = len(statesNlp)
 
-    for _ in range(math.ceil(batch_size / mini_batch_size)):
-        rand_ids = np.random.randint(0, batch_size, mini_batch_size)
-        
+    indx = [ i for i in range(tr_size)]
+    np.random.shuffle(indx)
+    lb = 0
+    while lb < tr_size:
+        rand_ids = indx[lb: min(lb+mini_batch_size, tr_size)]
+        lb += mini_batch_size
         if args["model"] == 0:
             yield states[rand_ids, :], states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
         elif args["model"] == 1:
@@ -198,8 +201,8 @@ if __name__=='__main__':
     # max_advantage = 20
     # Neural Network Hyper params:
     lr               = 1e-5
-    mini_batch_size  = 1
-    ppo_epochs       = 1
+    mini_batch_size  = 16
+    ppo_epochs       = 8
     if args["model"] == 0: # Naive model
         model = M.NNModel().to(device) 
     # threshold_reward = envs[0].threshold_reward
@@ -245,8 +248,7 @@ if __name__=='__main__':
             state["text"] = model.pre_process([state["text"]])
 
         episodeNo += 1
-        extra_padding = 25
-        for _iter in range(max_steps_per_episode+extra_padding):
+        for _iter in range(max_steps_per_episode):
             
             if args["model"] == 0:
                 dist, value = model(state["visual"])
