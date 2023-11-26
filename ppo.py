@@ -57,6 +57,7 @@ def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, ad
     elif args["model"] == 1:
         batch_size = states.size(0)
     elif args["model"] == 2:
+        print(type(states))
         batch_size = len(statesNlp)
     elif args["model"] == 3:
         batch_size = len(statesNlp)
@@ -322,10 +323,10 @@ if __name__=='__main__':
         returns   = torch.cat(returns).detach()
         log_probsArr = torch.cat(log_probsArr).detach()
         valuesArr    = torch.cat(valuesArr).detach()
-        if args["model"] == 2: # only nlp  
-            statesNlpArr = torch.cat(statesNlpArr)
         if args["model"] != 2: # exception
             statesArr = torch.cat(statesArr)
+        if args["model"] == 2 or args["model"] == 3: # only nlp  
+            statesNlpArr = torch.cat(statesNlpArr)
         actionsArr   = torch.cat(actionsArr)
         advantage = returns - valuesArr
         ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
