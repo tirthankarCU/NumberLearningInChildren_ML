@@ -21,6 +21,7 @@ import math
 import time
 import numpy as np 
 import logging 
+import saveGoodData as SGD
 '''
     model_0: Naive CNN
     model_1: Full NLP
@@ -201,8 +202,8 @@ if __name__=='__main__':
     # max_advantage = 20
     # Neural Network Hyper params:
     lr               = 1e-5
-    mini_batch_size  = 16
-    ppo_epochs       = 8
+    mini_batch_size  = 8
+    ppo_epochs       = 4
     if args["model"] == 0: # Naive model
         model = M.NNModel().to(device) 
     # threshold_reward = envs[0].threshold_reward
@@ -222,6 +223,11 @@ if __name__=='__main__':
     prev_time=time.time()
     action_dict, reward_dict = {}, {}
     episodeNo = 0
+    '''
+        SAVE trajectory
+    '''
+    if instr_type == "state":
+        obj_bd = SGD.BestData()
     while frame_idx < max_frames:
         if early_stopping: break
         if time.time()-prev_time>300: # Every 5 mins
@@ -248,6 +254,7 @@ if __name__=='__main__':
             state["text"] = model.pre_process([state["text"]])
 
         episodeNo += 1
+        completed = False
         for _iter in range(max_steps_per_episode):
             
             if args["model"] == 0:
@@ -311,7 +318,10 @@ if __name__=='__main__':
                 LOG.info(f'Saving Model ...')
                 torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
             frame_idx += 1
-            if done: break
+            if done: 
+                if reward == 1:
+                    completed = True 
+                break
         if args["model"] == 0:
             _, next_value = model(next_state["visual"])
         elif args["model"] == 1:
@@ -331,5 +341,16 @@ if __name__=='__main__':
             statesNlpArr = torch.cat(statesNlpArr)
         actionsArr   = torch.cat(actionsArr)
         advantage = returns - valuesArr
-        ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
+        '''
+        SAVE trajectory
+        '''
+        if instr_type == "state":
+            obj_bd.setter(curr_number, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
+            statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage = obj_bd.getter(curr_number)
+            if statesArr != None:
+                ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
+        else:
+            ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
     torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
+for k,v in obj_bd.dict:
+    LOG.warning(f'No[{k}] ~ Len[{v.len}], Completed[{v.completed}]')
