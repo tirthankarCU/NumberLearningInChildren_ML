@@ -345,7 +345,7 @@ if __name__=='__main__':
         SAVE trajectory
         '''
         if instr_type == "state":
-            obj_bd.setter(curr_number, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
+            obj_bd.setter(curr_number, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage, completed)
             statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage = obj_bd.getter(curr_number)
             if statesArr != None:
                 ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)

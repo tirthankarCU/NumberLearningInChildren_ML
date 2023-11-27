@@ -12,8 +12,8 @@ class Data:
 class BestData:
     def __init__(self) -> None:
         self.dict = {}
-    def setter(self, no, state, stateNLP, action, log_prob, returns, advantage):
-        obj = Data(state, stateNLP, action, log_prob, returns, advantage)
+    def setter(self, no, state, stateNLP, action, log_prob, returns, advantage, completed):
+        obj = Data(state, stateNLP, action, log_prob, returns, advantage, completed)
         if not obj.completed: return 
         if no not in self.dict:
             self.dict[no] = obj 
