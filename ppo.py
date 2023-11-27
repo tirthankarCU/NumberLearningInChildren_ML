@@ -201,7 +201,7 @@ if __name__=='__main__':
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array", instr_type = instr_type)
     # max_advantage = 20
     # Neural Network Hyper params:
-    lr               = 1e-5
+    lr               = 1e-4
     mini_batch_size  = 8
     ppo_epochs       = 4
     if args["model"] == 0: # Naive model
@@ -352,5 +352,7 @@ if __name__=='__main__':
         else:
             ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
     torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
-for k,v in obj_bd.dict:
-    LOG.warning(f'No[{k}] ~ Len[{v.len}], Completed[{v.completed}]')
+
+if instr_type == "state":
+    for k, v in obj_bd.dict.items():
+        LOG.warning(f'No[{k}] ~ Len[{v.len}]')
