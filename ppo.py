@@ -34,16 +34,16 @@ import saveGoodData as SGD
     difficult_2
 '''
 curr_number = -1
-def RESETS(envs, override=True):
+def RESETS(envs, noX = None, override=True):
     global train_set_counter, train_set, args, curr_number
     if not override:
-        temp = train_set[-1] if args["ease"]>=0 else 1
+        temp = noX if args["ease"]>=0 else 1
         envs.reset(set_no = temp)
     set_number=train_set[train_set_counter] if args["ease"]>=0 else 1
-    if episodeNo%time_to_learn == 0: #increment only if time to learn has passed.
+    if episodeNo % time_to_learn == 0: #increment only if time to learn has passed.
         if train_set_counter>=len(train_set)-1:
             train_set_counter=0
-        train_set_counter+=1
+        train_set_counter += 1
     curr_number = set_number
     return envs.reset(set_no=set_number)
 
@@ -129,41 +129,41 @@ def compute_gae(next_value, rewards, masks, values, gamma=0.99, tau=0.95):
 
 def test_env(model):
     global max_steps_per_episode, device 
-    state = RESETS(env, override=False)
-
-    state["visual"] = U.pre_process(state)
-    if args["model"] == 1:
-        state["text"] = U.pre_process_text(model,state)
-    elif args["model"] == 2:
-        state['text'] = model.pre_process([state['text']])
-    elif args["model"] == 3:
-        state["text"] = model.pre_process([state["text"]])
-
     cum_reward=0
-    for _ in range(max_steps_per_episode):
-        if args["model"] == 0:
-            dist, value = model(state["visual"])
-        elif args["model"] == 1:
-            dist, value = model(state['visual'],state['text'])  
-        elif args["model"] == 2:
-            dist, value = model(state['text']) 
-        elif args["model"] == 3:
-            dist, value = model(state["visual"], state["text"])
-
-        action = dist.sample()
-        next_state, reward, done, info = STEPS(env,action.item())
-        next_state["visual"] = U.pre_process(next_state)
+    for no in train_set:
+        state = RESETS(env, noX = no, override=False)
+        state["visual"] = U.pre_process(state)
         if args["model"] == 1:
-            next_state["text"] = U.pre_process_text(model,next_state)
+            state["text"] = U.pre_process_text(model,state)
         elif args["model"] == 2:
-            next_state['text'] = model.pre_process([next_state['text']]) 
+            state['text'] = model.pre_process([state['text']])
         elif args["model"] == 3:
-            next_state["text"] = model.pre_process([next_state["text"]])
+            state["text"] = model.pre_process([state["text"]])
+        
+        for _ in range(max_steps_per_episode):
+            if args["model"] == 0:
+                dist, value = model(state["visual"])
+            elif args["model"] == 1:
+                dist, value = model(state['visual'],state['text'])  
+            elif args["model"] == 2:
+                dist, value = model(state['text']) 
+            elif args["model"] == 3:
+                dist, value = model(state["visual"], state["text"])
 
-        state=copy.deepcopy(next_state)
-        cum_reward += reward 
-        if done: break
-    return cum_reward
+            action = dist.sample()
+            next_state, reward, done, info = STEPS(env,action.item())
+            next_state["visual"] = U.pre_process(next_state)
+            if args["model"] == 1:
+                next_state["text"] = U.pre_process_text(model,next_state)
+            elif args["model"] == 2:
+                next_state['text'] = model.pre_process([next_state['text']]) 
+            elif args["model"] == 3:
+                next_state["text"] = model.pre_process([next_state["text"]])
+
+            state=copy.deepcopy(next_state)
+            cum_reward += reward 
+            if done: break
+    return cum_reward/len(train_set)
 
                 
 if __name__=='__main__':
@@ -201,9 +201,9 @@ if __name__=='__main__':
     env = gym.make('gym_examples/RlNlpWorld-v0',render_mode="rgb_array", instr_type = instr_type)
     # max_advantage = 20
     # Neural Network Hyper params:
-    lr               = 1e-4
-    mini_batch_size  = 8
-    ppo_epochs       = 4
+    lr               = 1e-5
+    mini_batch_size  = 1
+    ppo_epochs       = 1
     if args["model"] == 0: # Naive model
         model = M.NNModel().to(device) 
     # threshold_reward = envs[0].threshold_reward
@@ -223,11 +223,7 @@ if __name__=='__main__':
     prev_time=time.time()
     action_dict, reward_dict = {}, {}
     episodeNo = 0
-    '''
-        SAVE trajectory
-    '''
-    if instr_type == "state":
-        obj_bd = SGD.BestData()
+    dict = {}
     while frame_idx < max_frames:
         if early_stopping: break
         if time.time()-prev_time>300: # Every 5 mins
@@ -307,14 +303,14 @@ if __name__=='__main__':
                 statesNlpArr.append(state["text"])
                 
             state = copy.deepcopy(next_state)
-            if frame_idx % 1000 == 0:
+            if frame_idx % 50000 == 0:
                 test_reward = np.mean([test_env(model) for _ in range(1)])
                 test_rewards.append([frame_idx,test_reward])
                 LOG.warning(f'Discovery {action_dict}, {reward_dict}')
                 with open(f'results/test_reward_list_{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
                     json.dump(test_rewards, file)
                 if test_reward > threshold_reward: early_stop = True
-            if frame_idx % 5000 == 0:
+            if frame_idx % 50000 == 0:
                 LOG.info(f'Saving Model ...')
                 torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
             frame_idx += 1
@@ -341,18 +337,13 @@ if __name__=='__main__':
             statesNlpArr = torch.cat(statesNlpArr)
         actionsArr   = torch.cat(actionsArr)
         advantage = returns - valuesArr
-        '''
-        SAVE trajectory
-        '''
         if instr_type == "state":
-            obj_bd.setter(curr_number, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage, completed)
-            statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage = obj_bd.getter(curr_number)
-            if statesArr != None:
-                ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
-        else:
-            ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
+            if curr_number in dict and completed and dict[curr_number] > len(actionsArr):
+                ppo_epochs += 2
+                dict[curr_number] = len(actionsArr)
+        ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
     torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
 
 if instr_type == "state":
-    for k, v in obj_bd.dict.items():
+    for k, v in dict.items():
         LOG.warning(f'No[{k}] ~ Len[{v.len}]')

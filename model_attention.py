@@ -88,7 +88,7 @@ class NNAttention(nn.Module):
         dummy_m = 2
         dummy_img = torch.rand(dummy_m,*img_shape)
         dummy_out_img = self.cnn2(self.cnn1(self.cnn0(dummy_img))).view(dummy_m, -1)
-        self.img_op = 512
+        self.img_op = 128
         self.dnn = nn.Sequential(nn.Linear(dummy_out_img.shape[-1], self.img_op*2),
                                  nn.ReLU(),
                                  nn.Linear(self.img_op*2, self.img_op))
@@ -111,8 +111,8 @@ class NNAttention(nn.Module):
         self.attn0 = AttentionLayer(self.dmodel0, self.dkq0, self.dv0, self.nhead0)
     # COMBINED ATTENTION
         self.dmodel1 =   self.img_op//self.mx_sen_len + self.dmodel0
-        self.dkq1 = 32
-        self.dv1 = 32
+        self.dkq1 = 64
+        self.dv1 = 64
         self.nhead1 = 16
         self.attn1 = AttentionLayer(self.dmodel1, self.dkq1, self.dv1, self.nhead1)
     # ACTOR

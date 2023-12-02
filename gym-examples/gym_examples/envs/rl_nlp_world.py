@@ -9,6 +9,7 @@ import math
 '''
 ACTIONS
 '''
+__STATE_DENSE__ = True # Dense reward
 class ACTION(Enum):
     PICK_BIG=0
     PICK_MED=1
@@ -141,22 +142,33 @@ class RlNlpWorld(gym.Env):
         curr_no = whichNo()
         solution= True if curr_no == self.no else False
         self.curr_time += 1 
-        dismantle_curr_no = [curr_no%10, (curr_no//10)%10, (curr_no//100)%100]
-        dismantle_prev_no = [self.prev_no%10, (self.prev_no//10)%10, (self.prev_no//100)%100]
-        if (dismantle_curr_no[0] > dismantle_prev_no[0]) or \
-           (dismantle_curr_no[1] > dismantle_prev_no[1]) or \
-           (dismantle_curr_no[2] > dismantle_prev_no[2]):
-            self.prev_no = curr_no
-            reward = 1 
-        if (dismantle_curr_no[0] > self.dismantle_target[0]) or \
-           (dismantle_curr_no[1] > self.dismantle_target[1]) or \
-           (dismantle_curr_no[2] > self.dismantle_target[2]):
-            terminated = True        
-        self.nlp_obj.incr()
-        self._text = self.nlp_obj.get_next_instructions(state_def = \
-                                                        (self.blocksLeft, 
-                                                         self.carry, 
-                                                         self.boxType.value))
+        if not __STATE_DENSE__:
+            dismantle_curr_no = [curr_no%10, (curr_no//10)%10, (curr_no//100)%100]
+            dismantle_prev_no = [self.prev_no%10, (self.prev_no//10)%10, (self.prev_no//100)%100]
+            if (dismantle_curr_no[0] > dismantle_prev_no[0]) or \
+            (dismantle_curr_no[1] > dismantle_prev_no[1]) or \
+            (dismantle_curr_no[2] > dismantle_prev_no[2]):
+                self.prev_no = curr_no
+                reward = 1 
+            if (dismantle_curr_no[0] > self.dismantle_target[0]) or \
+            (dismantle_curr_no[1] > self.dismantle_target[1]) or \
+            (dismantle_curr_no[2] > self.dismantle_target[2]):
+                terminated = True        
+            self.nlp_obj.incr()
+            self._text = self.nlp_obj.get_next_instructions(state_def = \
+                                                            (self.blocksLeft, 
+                                                            self.carry, 
+                                                            self.boxType.value))
+        else:
+            if action == self.nlp_obj.get_next_actions():
+                self.nlp_obj.incr()
+                reward = 1
+            else: 
+                terminated = True 
+            self._text = self.nlp_obj.get_next_instructions(state_def = \
+                                                            (self.blocksLeft, 
+                                                            self.carry, 
+                                                            self.boxType.value))
         if self.curr_time>self.mx_timeSteps or solution==True:
             terminated = True 
         if terminated:
