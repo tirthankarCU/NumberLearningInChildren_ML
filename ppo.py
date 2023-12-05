@@ -58,7 +58,6 @@ def ppo_iter(mini_batch_size, states, statesNlp, actions, log_probs, returns, ad
     elif args["model"] == 1:
         tr_size = states.size(0)
     elif args["model"] == 2:
-        print(type(states))
         tr_size = len(statesNlp)
     elif args["model"] == 3:
         tr_size = len(statesNlp)
@@ -303,10 +302,11 @@ if __name__=='__main__':
                 statesNlpArr.append(state["text"])
                 
             state = copy.deepcopy(next_state)
+            if frame_idx % 5000 == 0:
+                LOG.warning(f'Discovery {action_dict}, {reward_dict}')
             if frame_idx % 50000 == 0:
                 test_reward = np.mean([test_env(model) for _ in range(1)])
                 test_rewards.append([frame_idx,test_reward])
-                LOG.warning(f'Discovery {action_dict}, {reward_dict}')
                 with open(f'results/test_reward_list_{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
                     json.dump(test_rewards, file)
                 if test_reward > threshold_reward: early_stop = True

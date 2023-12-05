@@ -161,7 +161,7 @@ if __name__=='__main__':
                 full_test[no] = run_agent(no,value["model"]["type"])
                 avg_cum += full_test[no]["cumulative_reward"]
                 LOG.info(f'[FULLTEST] No[{no}] ~ Reward[{full_test[no]["cumulative_reward"]}]')
-            LOG.info(f'[IMP] test {avg_cum/len(test_set)}')
+            LOG.info(f'[IMP] test {avg_cum/1000}')
             with open(f'{value["output_path"]}/full_test_dict.json','w') as file:
                 json.dump(full_test,file)
             LOG.info(f'Full Test Dict {value["output_path"]}/full_test_dict.json')  
