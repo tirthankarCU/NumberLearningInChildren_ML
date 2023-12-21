@@ -129,10 +129,10 @@ def gen_data_level_based(opt, args):
             valid.append(i)
     def compare(i1,i2):
         return sum_digits(i1) - sum_digits(i2)
-    m=int(len(valid)*0.7)
-    random.shuffle(valid)
+    m=int(len(valid)*0.8)
     train, test = valid[:m],valid[m:]
-    train.sort(); test.sort()
+    train = sorted(train,key=cmp_to_key(compare))
+    test = sorted(test,key=cmp_to_key(compare))
     return train, test
 
 def gen_data_natural(args):

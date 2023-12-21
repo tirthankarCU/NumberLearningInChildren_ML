@@ -1,7 +1,7 @@
 {
-    "model": 2,
+    "model": 3,
     "ease": 0,
-    "instr_type": 1,
+    "instr_type": 0,
     "iter": -1,
     "log": 30,
     "order": 0,
