@@ -1,0 +1,132 @@
+{
+	"model_naive":{
+		"model": {
+			"type": 0,
+			"path": "results/naive/cnn/model_naive.ml"
+		},
+		"train_set": [],
+		"test_set": [],
+		"train_result_plot": "results/naive/cnn/test_reward_list_naive.json",
+		"output_path": "results/naive/cnn"
+	},
+	"model_fnlp_naive":{
+		"model": {
+			"type": 1,
+			"path": "results/naive/nlp/model_fnlp_naive.ml"
+		},
+		"train_set": [], 
+		"test_set": [], 
+		"train_result_plot": "results/naive/nlp/test_reward_list_fnlp_naive.json",
+		"output_path": "results/naive/nlp"
+	},
+	"model_easy":{
+		"model": {
+			"type": 0,
+			"path": "results/easy/cnn/model_easy.ml"
+		},
+		"train_set": "results/easy/cnn/train_seteasy.json", 
+		"test_set": "results/easy/cnn/test_seteasy.json", 
+		"train_result_plot": "results/easy/cnn/test_reward_list_easy.json",
+		"output_path": "results/easy/cnn"
+	},
+	"model_fnlp_easy":{
+		"model": {
+			"type": 1,
+			"path": "results/easy/nlp/model_fnlp_easy.ml"
+		},
+		"train_set": "results/easy/nlp/train_setfnlp_easy.json", 
+		"test_set": "results/easy/nlp/test_setfnlp_easy.json", 
+		"train_result_plot": "results/easy/nlp/test_reward_list_fnlp_easy.json",
+		"output_path": "results/easy/nlp"
+	},
+	"model_fnlp_naive_stateInstr":{
+		"model": {
+			"type": 1,
+			"path": "results/naive/nlp_stateInstr/model_fnlp_naive_stateInstr.ml"
+		},
+		"train_set": "results/naive/nlp_stateInstr/train_setfnlp_naive.json", 
+		"test_set": "results/naive/nlp_stateInstr/test_setfnlp_naive.json", 
+		"train_result_plot": "results/naive/nlp_stateInstr/test_reward_list_fnlp_naive_stateInstr.json",
+		"output_path": "results/naive/nlp_stateInstr"
+	},
+	"model_fnlp_easy_stateInstr":{
+		"model": {
+			"type": 1,
+			"path": "results/easy/nlp_stateInstr/model_fnlp_easy_stateInstr.ml"
+		},
+		"train_set": "results/easy/nlp_stateInstr/train_setfnlp_easy.json", 
+		"test_set": "results/easy/nlp_stateInstr/test_setfnlp_easy.json", 
+		"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_fnlp_easy_stateInstr.json",
+		"output_path": "results/easy/nlp_stateInstr"
+	},
+	"model_onlp_naive_stateInstr":{
+		"model": {
+			"type": 2,
+			"path": "results/naive/nlp_stateInstr/model_onlp_naive_stateInstr.ml"
+		},
+		"train_set": [], 
+		"test_set": [], 
+		"train_result_plot": "results/naive/nlp_stateInstr/test_reward_list_onlp_naive_stateInstr.json",
+		"output_path": "results/naive/nlp_stateInstr"
+	},
+	"model_onlp_easy_stateInstr":{
+			"model": {
+					"type": 2,
+					"path": "results/easy/nlp_stateInstr/model_onlp_easy_stateInstr.ml"
+			},
+			"train_set": "results/easy/nlp_stateInstr/train_setonlp_easy.json",
+			"test_set": "results/easy/nlp_stateInstr/test_setonlp_easy.json",
+			"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_onlp_easy_stateInstr.json",
+			"output_path": "results/easy/nlp_stateInstr"
+	},
+    "model_onlp_easy":{
+            "model": {
+                    "type": 2,
+                    "path": "results/easy/nlp/model_onlp_easy.ml"
+            },
+            "train_set": "results/easy/nlp/train_setonlp_easy.json",
+            "test_set": "results/easy/nlp/test_setonlp_easy.json",
+            "train_result_plot": "results/easy/nlp/test_reward_list_onlp_easy.json",
+            "output_path": "results/easy/nlp"
+    },
+	"model_anlp_easy_stateInstr":{
+			"model": {
+					"type": 3,
+					"path": "results/easy/nlp_stateInstr/model_anlp_easy_stateInstr.ml"
+			},
+			"train_set": "results/easy/nlp_stateInstr/train_setanlp_easy.json",
+			"test_set": "results/easy/nlp_stateInstr/test_setanlp_easy.json",
+			"train_result_plot": "results/easy/nlp_stateInstr/test_reward_list_anlp_easy_stateInstr.json",
+			"output_path": "results/easy/nlp_stateInstr"
+	},
+	"model_anlp_easy":{
+		"model": {
+				"type": 3,
+				"path": "results/easy/nlp/model_anlp_easy.ml"
+		},
+		"train_set": "results/easy/nlp/train_setanlp_easy.json",
+		"test_set": "results/easy/nlp/test_setanlp_easy.json",
+		"train_result_plot": "results/easy/nlp/test_reward_list_anlp_easy.json",
+		"output_path": "results/easy/nlp"
+	},
+	"model_anlp_naive_stateInstr":{
+		"model": {
+				"type": 3,
+				"path": "results/naive/nlp_stateInstr/model_anlp_naive_stateInstr.ml"
+		},
+		"train_set": "results/naive/nlp_stateInstr/train_setanlp_naive.json",
+		"test_set": "results/naive/nlp_stateInstr/test_setanlp_naive.json",
+		"train_result_plot": "results/naive/nlp_stateInstr/test_reward_list_anlp_naive_stateInstr.json",
+		"output_path": "results/naive/nlp_stateInstr"
+	},
+	"model_anlp_naive":{
+		"model": {
+				"type": 3,
+				"path": "results/naive/nlp/model_anlp_naive_stateInstr.ml"
+		},
+		"train_set": "results/naive/nlp/train_setanlp_naive.json",
+		"test_set": "results/naive/nlp/test_setanlp_naive.json",
+		"train_result_plot": "results/naive/nlp/test_reward_list_anlp_naive_stateInstr.json",
+		"output_path": "results/naive/nlp"
+	}
+}
