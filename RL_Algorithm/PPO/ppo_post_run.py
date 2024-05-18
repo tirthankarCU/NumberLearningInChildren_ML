@@ -17,7 +17,7 @@ import gym_examples
 import copy
 import model_simple as M_Simp
 
-logging.basicConfig(filename='console_output.txt', filemode='w', level = logging.INFO, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
+logging.basicConfig(filename='Results/final_score.txt', filemode='w', level = logging.INFO, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
 LOG = logging.getLogger(__name__)
 
 def plot_ppo(ip,op):
@@ -87,7 +87,7 @@ if __name__=='__main__':
     for model_to_test in models_to_test:
         for id, val in enumerate(model_to_test):
             model_to_test[id] = 'model_' + val 
-    with open('test_config.json', 'r') as file:
+    with open('Configs/test_config.json', 'r') as file:
         args = json.load(file)
     '''
     FOR NEW TYPE OF INSTRUCTION (START)
