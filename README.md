@@ -7,7 +7,7 @@
 3. sudo docker run -p 8888:8888 -v $(pwd):/NumberLearningInChildren_ML tirthankar95/rl-nlp &
 4. sudo docker ps 
    -> Get the name of the image.
-5. sudo docker exec -it angry_lewin bash 
+5. Go inside the container ~ sudo docker exec -it angry_lewin bash 
    -> Here "angry_lewin" is the name of the container
-6. python3 -W ignore RL_Algorithm/PPO/ppo.py &> Results/console.log &
-7. python3 -W ignore RL_Algorithm/PPO/ppo_post_run.py &
+6. Run from the main directory ~ python3 -W ignore RL_Algorithm/PPO/ppo.py &> Results/console.log &
+7. Run from the main directory ~ python3 -W ignore RL_Algorithm/PPO/ppo_post_run.py &
