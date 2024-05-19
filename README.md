@@ -1,5 +1,6 @@
 **How to run the code?**
-0. Git clone the project 'https://github.com/TheDELLab/NumberLearningInChildren_ML.git' and go inside one directory.
+
+0. Git clone the project 'https://github.com/tirthankarCU/NumberLearningInChildren_ML.git' and go inside one directory.
 1. wget http://nlp.stanford.edu/data/glove.6B.zip
    unzip glove*.zip
 2. First pull the environment for running the code from docker-hub using. 
