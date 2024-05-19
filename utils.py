@@ -19,7 +19,7 @@ def plot(data,ylb,title):
     plt.title(title)
     plt.xlabel('Episodes')
     plt.ylabel(ylb)
-    plt.savefig(f'results/{title}.png')
+    plt.savefig(f'Results/{title}.png')
 
 def crop_resize(img,dim=224):
     img=np.array(img)
@@ -104,9 +104,9 @@ def gen_data(args):
         train, test = make_own_rand(args)
     elif args["order"] == 1010:
         train, test = make_task_sanity(args)
-    with open(f'results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+    with open(f'Results/train_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(train, file)
-    with open(f'results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+    with open(f'Results/test_set{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
         json.dump(test, file)
     return train, test
 

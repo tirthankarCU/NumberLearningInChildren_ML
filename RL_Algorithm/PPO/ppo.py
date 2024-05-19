@@ -1,11 +1,15 @@
 import sys 
 import os
+# Add all modules.
+sys.path.append(f'{os.getcwd()}')
+sys.path.append(f'{os.getcwd()}/NN_Model')
 sys.path.append(f'{os.getcwd()}/gym-examples')
+
 import numpy as np 
 np.random.seed(seed = 2023)
 import time
 import utils as U
-import model as M
+import model_cnn as M
 import model_nlp as MNLP
 import model_simple as M_Simp
 import model_attention as M_Attn
@@ -21,18 +25,8 @@ import math
 import time
 import numpy as np 
 import logging 
-import saveGoodData as SGD
-'''
-    model_0: Naive CNN
-    model_1: Full NLP
-    model_2: Partial NLP
-'''
 
-'''
-    easy_0
-    medium_1
-    difficult_2
-'''
+
 curr_number = -1
 def RESETS(envs, noX = None, override=True):
     global train_set_counter, train_set, args, curr_number
@@ -170,7 +164,7 @@ if __name__=='__main__':
               ['fnlp_easy','fnlp_medium','fnlp_hard','fnlp_naive'], \
               ['onlp_easy','onlp_medium','onlp_hard','onlp_naive'], \
               ['anlp_easy','anlp_medium','anlp_hard','anlp_naive']]
-    with open('train_config.json', 'r') as file:
+    with open('Configs/train_config.json', 'r') as file:
         args = json.load(file)
     logging.basicConfig(level = args["log"], format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
     LOG = logging.getLogger(__name__)
@@ -205,7 +199,6 @@ if __name__=='__main__':
     ppo_epochs       = 1
     if args["model"] == 0: # Naive model
         model = M.NNModel().to(device) 
-    # threshold_reward = envs[0].threshold_reward
     elif args["model"] == 1: # NLP CNN model
         model = MNLP.NNModelNLP().to(device)
     elif args["model"] == 2:
@@ -307,12 +300,12 @@ if __name__=='__main__':
             if frame_idx % 50000 == 0:
                 test_reward = np.mean([test_env(model) for _ in range(1)])
                 test_rewards.append([frame_idx,test_reward])
-                with open(f'results/test_reward_list_{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
+                with open(f'Results/test_reward_list_{suffix[args["model"]][args["ease"]]}.json', 'w') as file:
                     json.dump(test_rewards, file)
                 if test_reward > threshold_reward: early_stop = True
             if frame_idx % 50000 == 0:
                 LOG.info(f'Saving Model ...')
-                torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
+                torch.save(model.state_dict(),f'Results/model_{suffix[args["model"]][args["ease"]]}.ml')
             frame_idx += 1
             if done: 
                 if reward == 1:
@@ -342,8 +335,5 @@ if __name__=='__main__':
                 ppo_epochs += 2
                 dict[curr_number] = len(actionsArr)
         ppo_update(model, optimizer, ppo_epochs, mini_batch_size, statesArr, statesNlpArr, actionsArr, log_probsArr, returns, advantage)
-    torch.save(model.state_dict(),f'results/model_{suffix[args["model"]][args["ease"]]}.ml')
+    torch.save(model.state_dict(),f'Results/model_{suffix[args["model"]][args["ease"]]}.ml')
 
-if instr_type == "state":
-    for k, v in dict.items():
-        LOG.warning(f'No[{k}] ~ Len[{v.len}]')

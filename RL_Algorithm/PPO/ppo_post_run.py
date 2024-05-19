@@ -1,10 +1,13 @@
-import json 
-import logging 
 import sys 
 import os
+# Add all modules.
+sys.path.append(f'{os.getcwd()}')
+sys.path.append(f'{os.getcwd()}/NN_Model')
 sys.path.append(f'{os.getcwd()}/gym-examples')
+import json 
+import logging 
 import utils as U
-import model as M
+import model_cnn as M
 import model_nlp as MNLP
 import model_attention as M_Attn
 import torch 
@@ -14,7 +17,7 @@ import gym_examples
 import copy
 import model_simple as M_Simp
 
-logging.basicConfig(filename='console_output.txt', filemode='w', level = logging.INFO, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
+logging.basicConfig(filename='Results/final_score.txt', filemode='w', level = logging.INFO, format='%(asctime)3s - %(filename)s:%(lineno)d - %(message)s')
 LOG = logging.getLogger(__name__)
 
 def plot_ppo(ip,op):
@@ -31,8 +34,6 @@ def plot_ppo(ip,op):
 
 def run_agent(number,opt):
     def policy(S):
-        nonlocal opt
-        
         if opt == 0:
             dist, value = model(S['visual'])
         elif opt == 1:
@@ -43,7 +44,6 @@ def run_agent(number,opt):
         elif opt == 3:
             S['text'] = model.pre_process([S['text']])
             dist, value = model(S['visual'],S['text'])
-
         action = dist.sample()
         return action.cpu().numpy().item()
     dbg=False
@@ -87,7 +87,7 @@ if __name__=='__main__':
     for model_to_test in models_to_test:
         for id, val in enumerate(model_to_test):
             model_to_test[id] = 'model_' + val 
-    with open('test_config.json', 'r') as file:
+    with open('Configs/test_config.json', 'r') as file:
         args = json.load(file)
     '''
     FOR NEW TYPE OF INSTRUCTION (START)
@@ -100,7 +100,7 @@ if __name__=='__main__':
     '''
     FOR NEW TYPE OF INSTRUCTION (END)
     '''
-    with open('test_path.json','r') as file:
+    with open('Configs/test_path.json','r') as file:
         paths = json.load(file)
     for key,value in paths.items(): 
         if key != models_to_test[args["model"]][args["ease"]]: continue
