@@ -99,7 +99,7 @@ class NNAttention(nn.Module):
         if embedding_val not in [50, 100, 200, 300]:
             LOG.error(f'wrong embedding value.')
             assert False
-        with open(f'glove.6B/glove.6B.{embedding_val}d.txt', 'r') as file:
+        with open(f'glove.6B.{embedding_val}d.txt', 'r') as file:
             for line in file:
                 list_ = line.split()
                 self.embedding[list_[0]] = [float(list_[x]) for x in range(1, embedding_val+1)]
