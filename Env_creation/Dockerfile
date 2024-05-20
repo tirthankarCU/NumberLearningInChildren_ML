@@ -1,15 +1,5 @@
 # getting docker base image
 FROM dokken/ubuntu-20.04
-# # Curl command doesn't work because docker containers generally don't have access to the internet so I am copying vscode from my OG machine. 
-# COPY vscode.deb /tmp
-
-# # To install any other dependencies
-# RUN apt-get install -y xdg-utils 
-
-# RUN dpkg -i /tmp/vscode.deb 
-
-# # To install any other dependencies
-# RUN apt-get -f install -y
 
 RUN apt-get install -y software-properties-common
 
@@ -29,10 +19,12 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 
 RUN python3 get-pip.py 
 
-RUN rm -rf ~/NLP_RL_Docker_Version
+RUN apt-get update && apt-get install -y git
+
+RUN git clone https://github.com/tirthankarCU/NumberLearningInChildren_ML.git
 
 # changing mount point
-WORKDIR /NLP_RL_Docker_Version
+WORKDIR /NumberLearningInChildren_ML
 
 # installing python packages.
 RUN pip install -r Env_creation/requirements0.txt
@@ -42,4 +34,5 @@ RUN pip install -r Env_creation/requirements1.txt
 
 # for open cv2
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+
 
