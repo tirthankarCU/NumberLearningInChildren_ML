@@ -55,7 +55,7 @@ class RectNode:
         
 offset=int(10*frac)
 w_carry,h_carry=int(128*frac),int(128*frac)
-carry_indicator, carry_rect=False, pygame.Rect(90*offset,45*offset,w_carry,h_carry)    
+carry_indicator, carry_rect = False, pygame.Rect(90*offset,45*offset,w_carry,h_carry)    
 def drawRectangleBorder(rect_,color,width):
     a=(rect_.left,rect_.top)
     b=(rect_.left+rect_.width-width,rect_.top)
@@ -176,36 +176,32 @@ def drawAgain():
     return rgb_array
 
 def draw_main(render_mode,fps,no):
-    global FPS,rm,big_block,medium_block,small_block,constructArrElement,WIN,DIGIT_OUTER,FONT
+    global FPS,rm,big_block,medium_block,small_block,constructArrElement,WIN,\
+           DIGIT_OUTER,FONT, carry_indicator
     big_block=[];medium_block=[];small_block=[]
     constructArrElement=[[] for _ in range(MX_NO_OF_DIGITS)]
+    carry_indicator = False
     FPS,rm=fps,render_mode
-
     pygame.init()
     if rm=='human':
         WIN = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("NLP_RL_GAME")
     else:
         WIN = pygame.Surface((WIDTH, HEIGHT))
-
     DIGIT_OUTER=pygame.Rect(WIDTH/2-width_do/2,HEIGHT/2-height_do/2,width_do,height_do)
-
     FONT = pygame.font.SysFont('Arial',FONT_SIZE)
-
-    clock=pygame.time.Clock()
     no_list=[]
     while no!=0:
         no_list.append(no%10)
         no=no//10
     drawWindowOneTime(no_list)
     if True:
-        #clock.tick(FPS)
         return drawAgain()
 
 def close_pyame():
     pygame.quit()
 
-if __name__=='__main__':
-    carry_indicator=True
-    plt.imsave('how_image_looks.png',draw_main("rgb_array",1000000,969))
+# if __name__=='__main__':
+#     carry_indicator=True
+#     plt.imsave('how_image_looks.png',draw_main("rgb_array",1000000,969))
     
