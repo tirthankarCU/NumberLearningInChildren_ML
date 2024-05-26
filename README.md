@@ -1,7 +1,10 @@
 **The Reinforcement Learning Environment**
 
+`Policy type instruction [DEMO]`
+![Policy Type Instruction](src/RL_ENV.gif)
 ---
 **Software Architecture**
+
 `During Training`
 ![Software Architecture during training](src/SA_train.png)
 `During Testing`

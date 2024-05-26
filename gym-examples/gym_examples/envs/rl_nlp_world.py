@@ -55,10 +55,7 @@ class RlNlpWorld(gym.Env):
 ############################################
     def reset(self, set_no=-1, seed=None, options=None):
         super().reset(seed=seed)
-        if set_no==-1:
-            self.no=np.random.randint(1,1000)
-        else:
-            self.no=set_no
+        self.no=np.random.randint(1,1000) if set_no == -1 else set_no
         self.prev_no = 0
         self.dismantle_target = [self.no%10, (self.no//10)%10, (self.no//100)%100]
         self.nlp_obj = CreateInstructions(self.no, type = self.instr_type)
