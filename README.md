@@ -1,4 +1,11 @@
+**The Reinforcement Learning Environment**
+
+**Software Architecture**
+`During Training`
+![Software Architecture during training](src/SA_train.png)
+`During Testing`
 **How to run the code?**
+![Software Architecture during testing](src/SA_test.png)
 
 0. Git clone the project 'https://github.com/tirthankarCU/NumberLearningInChildren_ML.git' and go inside one directory.
 1. wget http://nlp.stanford.edu/data/glove.6B.zip
