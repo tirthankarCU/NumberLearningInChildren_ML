@@ -1,12 +1,15 @@
 **The Reinforcement Learning Environment**
 
+---
 **Software Architecture**
 `During Training`
 ![Software Architecture during training](src/SA_train.png)
 `During Testing`
 ![Software Architecture during testing](src/SA_test.png)
 
+---
 **How to run the code?**
+
 0. Git clone the project 'https://github.com/tirthankarCU/NumberLearningInChildren_ML.git' and go inside one directory.
 1. wget http://nlp.stanford.edu/data/glove.6B.zip
    unzip glove*.zip
@@ -19,3 +22,4 @@
    -> Here "angry_lewin" is the name of the container
 6. Run from the main directory ~ python3 -W ignore RL_Algorithm/PPO/ppo.py &> Results/console.log &
 7. Run from the main directory ~ python3 -W ignore RL_Algorithm/PPO/ppo_post_run.py &
+---
